@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # PHP-FPM com Nginx
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gaivota_app
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - gaivota_network
+
+  # Nginx (serviço separado)
+  nginx:
+    image: nginx:1.30.0-alpine3.23
+    container_name: gaivota_nginx
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./public:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+    networks:
+      - gaivota_network
+
+  # PostgreSQL
+  db:
+    image: postgres:18.3-alpine3.23
+    container_name: gaivota_db
+    environment:
+      POSTGRES_DB: gaivota
+      POSTGRES_USER: gaivota_user
+      POSTGRES_PASSWORD: gaivota_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - gaivota_network
+
+  # Redis
+  redis:
+    image: redis:8.6.2-alpine3.23
+    container_name: gaivota_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - gaivota_network
+
+  # Certbot para SSL
+  certbot:
+    image: certbot/certbot:v5.5.0
+    container_name: gaivota_certbot
+    volumes:
+      - ./certbot/etc:/etc/letsencrypt:rw
+      - ./certbot/var/lib:/var/lib/letsencrypt:rw
+      - ./certbot/var/log:/var/log/letsencrypt:rw
+      - ./certbot/certbot:/certbot:rw
+    entrypoint: /bin/sh
+    command: ["certbot", "--help"]
+    networks:
+      - gaivota_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  gaivota_network:
+    driver: bridge
