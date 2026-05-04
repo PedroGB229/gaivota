@@ -5,9 +5,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="{{icon}}" sizes="any">
+<<<<<<< Updated upstream
     <title>{{titulo}}</title>
     {{ vite('resources/css/app.css') }}
     {% block css %}{% endblock %}
+=======
+    {% include 'partial/css.html' %}
+    <title>{{titulo}}</title>
+>>>>>>> Stashed changes
 </head>
 
 <body>
@@ -28,8 +33,14 @@
             {% endblock %}
         </div>
     </main>
+<<<<<<< Updated upstream
     {{ vite('resources/js/app.js') }}
     {% block script %}{% endblock %}
+=======
+    {% block script %}
+    {% include 'partial/script.html' %}
+    {% endblock %}
+>>>>>>> Stashed changes
 </body>
 
 </html>

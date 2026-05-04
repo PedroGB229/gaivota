@@ -91,5 +91,10 @@
 {% endblock %}
 
 {% block script %}
+<<<<<<< Updated upstream
 {{ vite('resources/js/pages/customer.js') }}
+=======
+{% include 'partial/script.html' %}
+<script defer type="module" src="/assets/js/pages/customer.js"></script>
+>>>>>>> Stashed changes
 {% endblock %}

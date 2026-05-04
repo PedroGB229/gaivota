@@ -1,10 +1,14 @@
 /vendor
 /vendors
+<<<<<<< Updated upstream
 /node_modules
+=======
+>>>>>>> Stashed changes
 /tmp
 /logs
 /docker/postgres/storage
 /docker/redis/storage
+<<<<<<< Updated upstream
 .env
 # Node.js / Vite
 /node_modules
@@ -12,3 +16,6 @@
 /public/hot
 # Build output do Vite — gerado pelo CI/CD a partir de resources/
 /public/assets
+=======
+.env
+>>>>>>> Stashed changes
