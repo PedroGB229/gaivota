@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Trait;
 
 use Slim\Views\Twig;
-<<<<<<< Updated upstream
 use Twig\TwigFunction;
 use app\helpers\Vite;
-=======
->>>>>>> Stashed changes
 
 trait Template
 {
@@ -20,7 +17,6 @@ trait Template
         if ($this->twig !== null) {
             return $this->twig;
         }
-<<<<<<< Updated upstream
 
         $this->twig = Twig::create(DIR_VIEWS);
         $env = $this->twig->getEnvironment();
@@ -34,11 +30,6 @@ trait Template
             ['is_safe' => ['html']]
         ));
 
-=======
-        $this->twig = Twig::create(DIR_VIEWS);
-        $env = $this->twig->getEnvironment();
-        $env->addGlobal('icon', '/img/favicon.png');
->>>>>>> Stashed changes
         return $this->twig;
     }
 

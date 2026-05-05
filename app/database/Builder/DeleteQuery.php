@@ -4,53 +4,68 @@ declare(strict_types=1);
 
 namespace App\Database\Builder;
 
-use App\Database\Connection;
+use app\database\Connection;
 
 class DeleteQuery
 {
     private string $table;
-    private array $where = [];
-    private array $binds = [];
-    public static function table(string $table)
+    private array $conditions = [];
+
+    /**
+     * Define a tabela da qual o registro será excluído.
+     * Exemplo: DeleteQuery::table('customer')
+     */
+    public static function table(string $table): self
     {
-        $self = new self;
+        $self        = new self;
         $self->table = $table;
         return $self;
     }
-    public function where(string $field, string $operator, string|int $value, ?string $logic = null)
+
+    /**
+     * Adiciona uma condição WHERE.
+     * Exemplo: ->where('id', '=', 5)
+     */
+    public function where(string $field, string $operator, mixed $value, string $type = 'AND'): self
     {
-        $placeHolder = '';
-        $placeHolder = $field;
-        if (str_contains($placeHolder, '.')) {
-            $placeHolder = substr($field, strpos($field, '.') + 1);
-        }
-        $this->where[] = "{$field} {$operator} :{$placeHolder} {$logic}";
-        $this->binds[$placeHolder] = $value;
+        $this->conditions[] = [
+            'field'    => $field,
+            'operator' => strtoupper($operator),
+            'value'    => $value,
+            'type'     => strtoupper($type),
+        ];
         return $this;
     }
-    private function createQuery()
+
+    private function buildQuery(): array
     {
-        if (!$this->table) {
-            throw new \Exception("A consulta precisa invocar o método delete.");
+        $sql    = "DELETE FROM {$this->table}";
+        $params = [];
+
+        if (!empty($this->conditions)) {
+            foreach ($this->conditions as $index => $condition) {
+                $placeholder          = ':where_' . $index;
+                $connector            = ($index === 0) ? 'WHERE' : $condition['type'];
+                $sql                 .= " {$connector} {$condition['field']} {$condition['operator']} {$placeholder}";
+                $params[$placeholder] = $condition['value'];
+            }
         }
-        $query = '';
-        $query = "delete from {$this->table} ";
-        $query .= (isset($this->where) and (count($this->where) > 0)) ? ' where ' . implode(' ', $this->where) : '';
-        return $query;
+
+        return [$sql, $params];
     }
-    public function executeQuery($query)
+
+    /**
+     * Executa o DELETE e retorna true em caso de sucesso.
+     */
+    public function delete(): bool
     {
-        $connection = Connection::connection();
-        $prepare = $connection->prepare($query);
-        return $prepare->execute($this->binds ?? []);
-    }
-    public function delete()
-    {
-        $query = $this->createQuery();
+        [$sql, $params] = $this->buildQuery();
         try {
-            return $this->executeQuery($query);
+            $con     = Connection::connection();
+            $prepare = $con->prepare($sql);
+            return $prepare->execute($params);
         } catch (\PDOException $e) {
-            throw new \Exception("Restrição: {$e->getMessage()}");
+            throw new \Exception($e->getMessage());
         }
     }
 }

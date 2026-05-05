@@ -8,7 +8,7 @@ const HOT_FILE = resolve(__dirname, 'public/hot');
 
 function writeHotFilePlugin() {
     return {
-        name: 'gaivota-write-hot-file',
+        name: 'jaiminho-write-hot-file',
         apply: 'serve',
         configureServer(server) {
             server.httpServer?.once('listening', () => {
@@ -36,7 +36,6 @@ function writeHotFilePlugin() {
 
 export default defineConfig(({ command }) => ({
     base: command === 'build' ? '/assets/' : '/',
-
     build: {
         manifest: 'manifest.json',
         outDir: 'public/assets',
