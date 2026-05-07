@@ -36,6 +36,7 @@ function writeHotFilePlugin() {
 
 export default defineConfig(({ command }) => ({
     base: command === 'build' ? '/assets/' : '/',
+
     build: {
         manifest: 'manifest.json',
         outDir: 'public/assets',

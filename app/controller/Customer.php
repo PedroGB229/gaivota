@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\controller;
 
+
 final class Customer extends Base
 {
     public function list($request, $response)
@@ -22,11 +23,7 @@ final class Customer extends Base
         $action = ($id === null) ? 'c' : 'e';
         $customer = [];
         if (!is_null($id)) {
-            $qb = \app\database\DB::select('*')->from('customer');
-
-            $customer = $qb
-                ->where('id = ' . $qb->createPositionalParameter($id, \Doctrine\DBAL\ParameterType::INTEGER))
-                ->fetchAssociative();
+            $customer = \App\Database\Builder\SelectQuery::select()->from('customer')->where('id', '=', $id)->fetch();
         }
         return $this->getTwig()
             ->render($response, $this->setView('customer'), [
@@ -51,11 +48,11 @@ final class Customer extends Base
             'ativo' => ($form['ativo'] === 'true') ? true : false
         ];
         try {
-            $IsInserted = \app\database\DB::connection()->insert('customer', $FieldsAndValues);
+            $IsInserted = \App\Database\Builder\InsertQuery::insert('customer')->save($FieldsAndValues);
             if (!$IsInserted) {
                 return $this->json($response, ['status' => false, 'msg' => 'Restrição: ' . $IsInserted, 'id' => 0], 500);
             }
-            $id = \app\database\DB::select('id')->from('customer')->fetchAssociative();
+            $id = \App\Database\Builder\SelectQuery::select('id')->from('customer')->order('id', 'desc')->fetch();
 
             return $this->json($response, ['status' => true, 'msg' => 'Salvo com sucesso!', 'id' => $id['id']], 201);
         } catch (\Exception $e) {
@@ -78,7 +75,7 @@ final class Customer extends Base
             'ativo' => ($form['ativo'] === 'true') ? true : false
         ];
         try {
-            $IsUpdated = \app\database\DB::connection()->update('customer', $FieldsAndValues, ['id' => $id]);
+            $IsUpdated = \App\Database\Builder\UpdateQuery::table('customer')->set($FieldsAndValues)->where('id', '=', $id)->update();
             if (!$IsUpdated) {
                 return $this->json($response, ['status' => false, 'msg' => 'Restrição: ' . $IsUpdated, 'id' => 0], 403);
             }
@@ -95,7 +92,7 @@ final class Customer extends Base
             return $this->json($response, ['status' => false, 'msg' => 'Informe o código do cliente', 'id' => 0], 403);
         }
         try {
-            $IsDeleted = \app\database\DB::connection()->delete('customer', ['id' => $id]);
+            $IsDeleted = \App\Database\Builder\DeleteQuery::table('customer')->where('id', '=', $id)->delete();
             if (!$IsDeleted) {
                 return $this->json($response, ['status' => false, 'msg' => 'Restrição: ' . $IsDeleted, 'id' => $id], 403);
             }
@@ -107,12 +104,12 @@ final class Customer extends Base
     public function listingdata($request, $response)
     {
         $form = $request->getParsedBody();
-
-        $term   = $form['search']['value'] ?? null;
-        $start  = (int) ($form['start']  ?? 0);
-        $length = (int) ($form['length'] ?? 10);
-
-        # Whitelist de colunas — proteção contra SQL injection no orderBy
+        #Captura o termo da pesquisa 
+        $term = $form['search']['value'] ?? null;
+        #Captura o valor do registro inicial
+        $start = (int)$form['start'];
+        #Captura o valor do registro final
+        $length = (int)$form['length'];
         $columns = [
             0 => 'id',
             1 => 'nome_fantasia',
@@ -120,89 +117,70 @@ final class Customer extends Base
             3 => 'inscricao_estadual',
             4 => 'nascimento_fundacao',
             5 => 'criado_em',
-            6 => 'atualizado_em',
+            6 => 'atualizado_em'
         ];
-
-        $posField = (isset($form['order'][0]['column']) && isset($columns[(int) $form['order'][0]['column']]))
-            ? (int) $form['order'][0]['column']
-            : 0;
-
-        # Validação da direção evita SQL injection no ORDER BY
-        $orderType  = strtoupper($form['order'][0]['dir'] ?? 'DESC');
-        $orderType  = in_array($orderType, ['ASC', 'DESC'], true) ? $orderType : 'DESC';
+        #Captura a posição do campo a ser filtrado
+        $posField = (isset($form['order'][0]['column']) && count($columns) > intval($form['order'][0]['column'])) ?
+            intval($form['order'][0]['column'])
+            :
+            0;
+        #Captura o tipo de ordenação, caso seja nula passaremos por padrão o valor DESC
+        $orderType = $form['order'][0]['dir'] ?? 'desc';
+        #Captura o nome_fantasia do campo para ordenação
         $orderField = $columns[$posField];
 
+        $query = \App\Database\Builder\SelectQuery::select()->from('customer');
+
         try {
-            # Total geral DataTables: recordsTotal
-            $totalRecords = (int) \app\database\DB::select('COUNT(*)')
-                ->from('customer')
-                ->fetchOne();
-
-            # Query principal com WHERE opcional
-            $query = \app\database\DB::select('*')->from('customer');
-
             if (!is_null($term) && $term !== '') {
-                $query->setParameter('term', '%' . $term . '%');
-
-                $query->where('CAST(id AS TEXT) ILIKE :term')
-                    ->orWhere('nome_fantasia ILIKE :term')
-                    ->orWhere('sobrenome_razao ILIKE :term')
-                    ->orWhere('cpf_cnpj ILIKE :term')
-                    ->orWhere('inscricao_estadual ILIKE :term')
-                    ->orWhere("TO_CHAR(nascimento_fundacao, 'DD/MM/YYYY') ILIKE :term")
-                    ->orWhere("TO_CHAR(criado_em, 'DD/MM/YYYY HH24:MI:SS') ILIKE :term")
-                    ->orWhere("TO_CHAR(atualizado_em, 'DD/MM/YYYY HH24:MI:SS') ILIKE :term");
+                $query->where('id', 'ILIKE', "{$term}", 'or')
+                    ->where('nome_fantasia', 'ILIKE', "{$term}", 'or')
+                    ->where('sobrenome_razao', 'ILIKE', "{$term}", 'or')
+                    ->where('cpf_cnpj', 'ILIKE', "{$term}", 'or')
+                    ->where('inscricao_estadual', 'ILIKE', "{$term}", 'or')
+                    ->where('nascimento_fundacao', 'ILIKE', "{$term}", 'or')
+                    ->where('criado_em', 'ILIKE', "{$term}", 'or')
+                    ->where('atualizado_em', 'ILIKE', "{$term}");
             }
 
-            # Total com filtro aplicado — clona o query e troca o SELECT por COUNT
-            $filteredRecords = (int) (clone $query)
-                ->select('COUNT(*)')
-                ->fetchOne();
+            $customers = $query->order($orderField, $orderType)
+                ->limit($length, $start)
+                ->fetchAll();
 
-            # Resultados paginados e ordenados
-            $customers = $query
-                ->orderBy($orderField, $orderType)
-                ->setFirstResult($start)
-                ->setMaxResults($length)
-                ->fetchAllAssociative();
+            $queryCount = \App\Database\Builder\SelectQuery::select('count(*) as qtd')->from('customer')->fetch();
 
-            # Formatação para o DataTables
-            $rows = [];
+            $customer = [];
+
             foreach ($customers as $key => $value) {
-                $cpfCnpj        = $value['cpf_cnpj']         ?? '';
-                $nomeFantasia   = $value['nome_fantasia']    ?? '';
-                $sobrenomeRazao = $value['sobrenome_razao']  ?? '';
+                $cpfCnpj = $value['cpf_cnpj'] ?? '';
+                $nomeFantasia = $value['nome_fantasia'] ?? '';
+                $sobrenomeRazao = $value['sobrenome_razao'] ?? '';
 
-                $nomeCompleto = (strlen($cpfCnpj) <= 14)
-                    ? trim($nomeFantasia . ' ' . $sobrenomeRazao)
-                    : $nomeFantasia;
+                $nomeCompleto = (strlen($cpfCnpj) <= 14) ? trim($nomeFantasia . ' ' . $sobrenomeRazao) : $nomeFantasia;
 
-                $rows[$key] = [
-                    $value['id'],
+                $customer[$key] = [
+                    $value["id"],
                     $nomeCompleto,
                     $cpfCnpj,
                     (new \DateTime($value['nascimento_fundacao'] ?? date('Y-m-d')))->format('d/m/Y'),
-                    ($value['ativo'] === true) ? 'Ativo' : 'Inativo',
+                    ($value['ativo'] === true) ? "Ativo" : "Inativo",
                     (new \DateTime($value['criado_em']))->format('d/m/Y H:i:s'),
                     (new \DateTime($value['atualizado_em']))->format('d/m/Y H:i:s'),
                     "<td>
-                    <a class='btn btn-sm btn-warning' href='/cliente/detalhes/" . $value['id'] . "'> <i class='fa-solid fa-pen-to-square'></i> Editar</a>
-                    <button type='button' class='btn btn-sm btn-danger' onclick='ShowModal(" . $value['id'] . ");'> <i class='fa-solid fa-trash'></i> Excluir</button>
-                </td>",
+                        <a class='btn btn-sm btn-warning' href='/cliente/detalhes/" . $value['id'] . "'> <i class='fa-solid fa-pen-to-square'></i> Editar</a>
+                        <button type='button' class='btn btn-sm btn-danger' onclick='ShowModal(" . $value['id'] . ");'> <i class='fa-solid fa-trash'></i> Excluir</button>
+                    </td>"
                 ];
             }
 
-            return $this->json($response, [
-                'recordsTotal'    => $totalRecords,
-                'recordsFiltered' => $filteredRecords,
-                'data'            => $rows,
-            ], 200);
+            $data = [
+                'recordsTotal' => count($customers),
+                'recordsFiltered' => $queryCount['qtd'] ?? 0,
+                'data' => $customer
+            ];
+            return $this->json($response, $data, 200);
         } catch (\Exception $e) {
-            return $this->json($response, [
-                'status' => false,
-                'msg'    => 'Restrição: ' . $e->getMessage(),
-                'id'     => 0,
-            ], 500);
+            return $this->json($response, ['status' => false, 'msg' => 'Restrição: ' . $e->getMessage(), 'id' => 0], 500);
         }
     }
 }
