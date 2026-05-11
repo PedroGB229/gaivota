@@ -9,7 +9,7 @@ use Twig\TwigFunction;
 use app\helpers\Vite;
 
 trait Template
-{
+{ 
     private ?Twig $twig = null;
 
     private function createTwig(): Twig

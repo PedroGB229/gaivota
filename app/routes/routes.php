@@ -8,7 +8,7 @@ $app->get('/login', app\controller\Login::class . ':login')->add(app\middleware\
 
 
 $app->group('/cliente', function (Slim\Routing\RouteCollectorProxy $group) {
-    $group->get('/lista', app\controller\Customer::class . ':list');
+    $group->get('/lista', app\controller\Customer::class . ':list'); 
     $group->get('/detalhes/{id}', app\controller\Customer::class . ':details');
     $group->get('/detalhes', app\controller\Customer::class . ':details');
     $group->post('/insert', app\controller\Customer::class . ':insert');

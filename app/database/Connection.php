@@ -7,7 +7,7 @@ namespace app\database;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\DriverManager;
 
-final class Connection
+final class Connection 
 {
     private static ?DBALConnection $instance = null;
     #Retorna a conexão DBAL — cria uma única vez por processo.

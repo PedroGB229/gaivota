@@ -1,12 +1,21 @@
 {
-  "name": "jaiminho3",
+  "name": "gaivota",
   "version": "1.0.0",
   "description": "Repositório de apoio à aula Técnicas de Teste de Software, preparado para apresentação aos alunos do Senac.",
+  "homepage": "https://github.com/PedroGB229/gaivota#readme",
+  "bugs": {
+    "url": "https://github.com/PedroGB229/gaivota/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PedroGB229/gaivota.git"
+  },
   "license": "MIT",
-  "author": "WILTON WILL DE PAULO",
+  "author": "PEDRO GONÇALVES BRITO",
   "type": "module",
-  "engines": {
-    "node": ">=22.12.0"
+  "main": "vite.config.js",
+  "directories": {
+    "test": "tests"
   },
   "scripts": {
     "dev": "vite",
@@ -29,5 +38,8 @@
   },
   "devDependencies": {
     "vite": "8.0.10"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

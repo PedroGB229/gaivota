@@ -6,7 +6,7 @@ namespace app\database;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 
-final class DB
+final class DB 
 {
     # Retorna um QueryBuilder com SELECT já configurado. Sem argumentos seleciona tudo ('*').
     public static function select(string ...$columns): QueryBuilder

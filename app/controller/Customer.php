@@ -23,7 +23,7 @@ final class Customer extends Base
         $customer = [];
         if (!is_null($id)) {
             $qb = \app\database\DB::select('*')->from('customer');
-
+    
             $customer = $qb
                 ->where('id = ' . $qb->createPositionalParameter($id, \Doctrine\DBAL\ParameterType::INTEGER))
                 ->fetchAssociative();
