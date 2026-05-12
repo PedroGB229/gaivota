@@ -208,6 +208,10 @@ body.login-page {
     background: #e0f0ff;
 }
 
+.btnCadastro {
+    margin-bottom: 1rem;
+}
+
 /* ── Botão Google ─────────────────────────────────────────── */
 .login-btn-google {
     width: 100%;

@@ -18,7 +18,8 @@
     ═══════════════════════════════════════════════════════════════════ -->
     <div class="login-photo">
         <div class="login-photo__placeholder">
-           <img src="/img/gaivota.jpg" alt="Gaivota">
+            <img src="/img/gaivota.jpg" alt="Gaivota">
+        </div>
         <div class="login-photo__overlay"></div>
     </div>
 
@@ -77,6 +78,13 @@
 
         <div class="login-sep"><span>ou continue com</span></div>
 
+
+        <div class="btnCadastro">
+            <button id="btnCadastro" type="button" class="login-btn">
+                Cadastre-se 
+            </button>
+        </div>
+
         <button id="loginGoogle" type="button" class="login-btn-google">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -93,7 +101,55 @@
 
     </div>
 
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Cadastrar novo usuário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerForm" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="registerNome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="registerNome" name="nome" placeholder="Digite seu nome" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="registerSobrenome" class="form-label">Sobrenome</label>
+                            <input type="text" class="form-control" id="registerSobrenome" name="sobrenome" placeholder="Digite seu sobrenome" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="registerCpf" class="form-label">CPF</label>
+                            <input type="text" class="form-control" id="registerCpf" name="cpf" placeholder="000.000.000-00" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="registerRg" class="form-label">RG</label>
+                            <input type="text" class="form-control" id="registerRg" name="rg" placeholder="Digite seu RG" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="registerSenha" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="registerSenha" name="senha" placeholder="Digite uma senha" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="registerSenhaConfirm" class="form-label">Confirmar senha</label>
+                            <input type="password" class="form-control" id="registerSenhaConfirm" name="senhaConfirm" placeholder="Confirme a senha" required>
+                        </div>
+                        <div class="col-12 form-check">
+                            <input class="form-check-input" type="checkbox" id="registerAtivo" name="ativo" value="true" checked>
+                            <label class="form-check-label" for="registerAtivo">Ativo</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="saveRegister" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{ vite('resources/js/app.js') }}
+    {{ vite('resources/js/pages/login.js') }}
 </body>
 
 </html>
