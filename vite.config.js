@@ -11,25 +11,17 @@ function writeHotFilePlugin() {
         name: 'gaivota-write-hot-file',
         apply: 'serve',
         configureServer(server) {
-            server.httpServer?.once('listening', () => {
-                const address = server.httpServer.address()
-                const protocol = server.config.server.https ? 'https' : 'http'
-                const host =
-                    typeof address === 'string'
-                        ? address
-                        : address.address === '::' || address.address === '0.0.0.0'
-                            ? 'localhost'
-                            : address.address
-                const port = address.port
-                fs.writeFileSync(HOT_FILE, `${protocol}://${host}:${port}`)
-            });
+            const origin = 'http://host.docker.internal:5173';
+            fs.writeFileSync(HOT_FILE, origin);
+            console.log(`[gaivota] hot file criado: ${origin}`);
+
             const cleanup = () => {
-                if (fs.existsSync(HOT_FILE)) fs.unlinkSync(HOT_FILE)
+                if (fs.existsSync(HOT_FILE)) fs.unlinkSync(HOT_FILE);
             }
-            process.on('exit', cleanup)
-            process.on('SIGINT', () => { cleanup(); process.exit() });
-            process.on('SIGTERM', () => { cleanup(); process.exit() });
-            process.on('SIGHUP', () => { cleanup(); process.exit() });
+            process.on('exit', cleanup);
+            process.on('SIGINT', () => { cleanup(); process.exit(); });
+            process.on('SIGTERM', () => { cleanup(); process.exit(); });
+            process.on('SIGHUP', () => { cleanup(); process.exit(); });
         }
     }
 }
@@ -69,16 +61,16 @@ export default defineConfig(({ command }) => ({
         }
     },
     server: {
-        host: '0.0.0.0',
-        port: 5173,
-        strictPort: true,
-        cors: true,
-        origin: 'http://localhost:5173',
-        hmr: {
-            host: 'localhost',
-            protocol: 'ws'
-        }
-    },
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    cors: true,
+    origin: 'http://host.docker.internal:5173',  // ← muda aqui
+    hmr: {
+        host: 'localhost',   // ← este pode ficar localhost (é o browser que conecta, não o Docker)
+        protocol: 'ws'
+    }
+},
     plugins: [
         writeHotFilePlugin()
     ]

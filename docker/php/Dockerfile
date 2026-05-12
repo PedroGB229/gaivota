@@ -28,6 +28,7 @@ RUN npm run build
 # ============================================================================
 FROM php:8.5.4-fpm-alpine3.23
 
+ARG TZ
 ENV TZ=${TZ} \
     COMPOSER_ALLOW_SUPERUSER=1
 

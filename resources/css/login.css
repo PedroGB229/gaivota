@@ -1,0 +1,278 @@
+/* ============================================================
+   LOGIN PAGE — gaivota_tech
+   Tema: branco + amarelo + azul
+   Importar em app.css → @import "./login.css";
+   ============================================================ */
+
+body.login-page {
+    min-height: 100vh;
+    background: #f0f4ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ── Área da foto ─────────────────────────────────────────── */
+.login-photo {
+    width: 100%;
+    max-width: 440px;
+    height: 210px;
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+    position: relative;
+    background: #dbeafe;
+    border: 1px solid #bfdbfe;
+    border-bottom: none;
+}
+
+.login-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.login-photo__overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, #ffffff);
+}
+
+.login-photo__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(160deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.login-photo__placeholder span {
+    font-size: 11px;
+    color: #93c5fd;
+    letter-spacing: 1.5px;
+}
+
+/* ── Card do formulário ───────────────────────────────────── */
+.login-card {
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    width: 100%;
+    max-width: 440px;
+    padding: 2rem 2.5rem 2.5rem;
+    box-shadow: 0 4px 24px rgba(37, 99, 235, 0.08);
+}
+
+/* ── Logo / marca ─────────────────────────────────────────── */
+.login-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.75rem;
+}
+
+.login-logo__icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: #eff6ff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #bfdbfe;
+}
+
+.login-logo__name {
+    font-size: 19px;
+    font-weight: 700;
+    color: #1e3a8a;
+    letter-spacing: 0.2px;
+}
+
+.login-logo__name span {
+    color: #f59e0b;
+}
+
+.login-logo__sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+.login-divider {
+    height: 1px;
+    background: #e0f0ff;
+    margin-bottom: 1.75rem;
+}
+
+/* ── Campos ───────────────────────────────────────────────── */
+.login-field {
+    margin-bottom: 1.1rem;
+}
+
+.login-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1e40af;
+    margin-bottom: 5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.login-field .input-wrap {
+    position: relative;
+}
+
+.login-field .input-wrap i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 15px;
+    color: #93c5fd;
+    pointer-events: none;
+}
+
+.login-field input {
+    width: 100%;
+    background: #f8faff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 11px 13px 11px 40px;
+    font-size: 14px;
+    color: #1e3a8a;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.login-field input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.login-field input::placeholder {
+    color: #bfdbfe;
+}
+
+/* ── Botão principal ──────────────────────────────────────── */
+.login-btn {
+    width: 100%;
+    background: #1d4ed8;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+    letter-spacing: 0.3px;
+}
+
+.login-btn:hover {
+    background: #1e40af;
+}
+
+/* ── Separador "ou" ───────────────────────────────────────── */
+.login-sep {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 1rem 0;
+}
+
+.login-sep span {
+    font-size: 11px;
+    color: #93c5fd;
+    white-space: nowrap;
+}
+
+.login-sep::before,
+.login-sep::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e0f0ff;
+}
+
+/* ── Botão Google ─────────────────────────────────────────── */
+.login-btn-google {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 13px;
+    color: #1e40af;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    transition: background 0.2s, border-color 0.2s;
+    font-weight: 500;
+}
+
+.login-btn-google:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+}
+
+.login-btn-google svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ── Badge amarelo de sistema ativo ───────────────────────── */
+.login-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: #92400e;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.login-badge__dot {
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+
+/* ── Rodapé ───────────────────────────────────────────────── */
+.login-foot {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: 11px;
+    color: #93c5fd;
+}
+
+.login-foot a {
+    color: #1d4ed8;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-foot a:hover {
+    text-decoration: underline;
+}

@@ -117,7 +117,9 @@ services:
       context: .
       # Caminho do Dockerfile responsável por montar o ambiente PHP
       dockerfile: docker/php/Dockerfile
-
+      
+      args:
+        TZ: ${TZ}
     # Nome fixo do container PHP para facilitar identificação e debug
     container_name: app_php
 
