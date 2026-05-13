@@ -141,14 +141,13 @@ final class Login extends Base
         } catch (\Throwable $e) {
             # Qualquer outra falha inesperada: loga e responde de forma genérica
             error_log('[auth][GERAL] ' . $e->getMessage());
-            return $this->json($response, ['status' => false, 'msg' => 'Erro inesperado. Tente novamente.', 'id' => 0], 500);
+            return $this->json($response, ['status' => false, 'msg' => 'Erro inesperado. Tente novamente: ' . $e->getMessage(), 'id' => 0], 500);
         }
     }
 
     public function preRegister($request, $response)
     {
         $form = $request->getParsedBody();
-
         #Captura os dados informado pelo usuário no formulário de pré-cadastro
         $nome      = $form['nome'] ?? null;
         $sobrenome = $form['sobrenome'] ?? null;
@@ -170,20 +169,25 @@ final class Login extends Base
         ];
         $id_usuario = 0;
         #Insere os dados no data base com o Docrine e recebe o ID do usuário criado.
-        #?????
+        $id_usuario = \app\database\DB::connection()->insert('users', $DataUser);
         #Insere os dados do email do usuário na base.
         $DataEmail = [
             'id_usuario' => $id_usuario,
             'tipo' => 'EMAIL',
             'contato' => $email
         ];
-        #????
+        \app\database\DB::connection()->insert('contact', $DataEmail);
         #Insere os dados do telefone do usuário na base.
         $DataTel = [
             'id_usuario' => $id_usuario,
             'tipo' => 'TELEFONE',
             'contato' => $telefone
         ];
-        #???
+        \app\database\DB::connection()->insert('contact', $DataTel);
+        #Retorna a resposta de sucesso ao cliente
+        return $this->json($response, [
+            'status' => true,
+            'msg' => 'Usuário cadastrado com sucesso!'
+        ], 200);
     }
 }

@@ -54,8 +54,8 @@ RUN apk add --no-cache $PHPIZE_DEPS \
     intl \
     mbstring \
     gd \
-    && pecl install pcov \
-    && docker-php-ext-enable pcov
+    && pecl install pcov redis \
+    && docker-php-ext-enable pcov redis
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 COPY --from=composer:2.9 /usr/bin/composer /usr/bin/composer

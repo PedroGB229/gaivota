@@ -74,7 +74,8 @@ services:
 
     # Define que o container PHP deve estar saudável antes do Nginx iniciar
     depends_on:
-      - php
+      php:
+        condition: service_healthy
 
     # Conecta o container à rede interna do projeto
     networks:

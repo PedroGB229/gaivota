@@ -5,145 +5,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{ vite('resources/css/app.css') }}
+    {{ vite('resources/css/login.css') }}
     <title>Gaivota Tech — Login</title>
 </head>
 
 <body class="login-page">
 
-    <!-- ══ FOTO DA GAIVOTA ══════════════════════════════════════════════
-         Para colocar sua foto:
-         1. Salve a imagem em public/img/gaivota.jpg
-         2. Remova o bloco .login-photo__placeholder
-         3. Adicione: <img src="/img/gaivota.jpg" alt="Gaivota">
-    ═══════════════════════════════════════════════════════════════════ -->
-    <div class="login-photo">
-        <div class="login-photo__placeholder">
+    <div class="login-wrapper">
+
+        <!-- ══ FOTO ══════════════════════════════════════════════════════ -->
+        <div class="login-photo">
             <img src="/img/gaivota.jpg" alt="Gaivota">
-        </div>
-        <div class="login-photo__overlay"></div>
-    </div>
-
-    <!-- ══ CARD DO FORMULÁRIO ══════════════════════════════════════════ -->
-    <div class="login-card">
-
-        <div class="login-logo">
-            <div class="login-logo__icon">
-                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 20 Q11 8 17 7 Q23 6 25 15 Q20 11 14 13 Q10 14 6 20Z" fill="#1d4ed8"/>
-                    <path d="M6 20 Q3 18 1 21 Q3 19 6 20Z" fill="#3b82f6"/>
-                    <path d="M25 15 Q28 13 30 16 Q28 14 25 15Z" fill="#3b82f6"/>
-                    <ellipse cx="18" cy="10" rx="2.5" ry="3" fill="#1e3a8a"/>
-                    <circle cx="17" cy="9" r="0.8" fill="#93c5fd"/>
-                    <path d="M20 11.5 L24 12.5 L20.5 13.5Z" fill="#f59e0b"/>
-                </svg>
-            </div>
-            <div>
-                <div class="login-logo__name">gaivota<span>_tech</span></div>
-                <div class="login-logo__sub">Sistema de gestão empresarial</div>
-            </div>
+            <div class="login-photo__overlay"></div>
         </div>
 
-        <div style="text-align:center">
-            <div class="login-badge">
-                <span class="login-badge__dot"></span>
-                Sistema operacional
-            </div>
-        </div>
+        <!-- ══ CARD ══════════════════════════════════════════════════════ -->
+        <div class="login-card">
 
-        <div class="login-divider"></div>
-
-        <form id="form">
-            <div class="login-field">
-                <label for="login">Usuário</label>
-                <div class="input-wrap">
-                    <i class="fa fa-user"></i>
-                    <input type="text" id="login" name="login"
-                        placeholder="CPF, telefone ou e-mail" autofocus>
+            <!-- Logo -->
+            <div class="login-logo">
+                <div class="login-logo__icon">
+                    <img src="/img/SimboloGaivota.avif" alt="Logo Gaivota Tech">
+                </div>
+                <div>
+                    <div class="login-logo__name">gaivota<span>_tech</span></div>
+                    <div class="login-logo__sub">Sistema de gestão empresarial</div>
                 </div>
             </div>
 
-            <div class="login-field">
-                <label for="senha">Senha</label>
-                <div class="input-wrap">
-                    <i class="fa fa-lock"></i>
-                    <input type="password" id="senha" name="senha"
-                        placeholder="••••••••">
+            <!-- Badge -->
+            <div class="text-center">
+                <div class="login-badge">
+                    <span class="login-badge__dot"></span>
+                    Sistema operacional
                 </div>
             </div>
 
-            <button id="btnLogin" type="button" class="login-btn">
-                Entrar no sistema
+            <div class="login-divider"></div>
+
+            <!-- Formulário de login -->
+            <form id="form">
+                <div class="login-field">
+                    <label for="login">Usuário</label>
+                    <div class="input-wrap">
+                        <i class="fa fa-user"></i>
+                        <input type="text" id="login" name="login"
+                            placeholder="CPF, telefone ou e-mail" autofocus>
+                    </div>
+                </div>
+
+                <div class="login-field">
+                    <label for="senha">Senha</label>
+                    <div class="input-wrap">
+                        <i class="fa fa-lock"></i>
+                        <input type="password" id="senha" name="senha"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button id="btnLogin" type="button" class="btn btn-primary w-100 login-btn">
+                    Entrar no sistema
+                </button>
+            </form>
+
+            <div class="login-sep"><span>ou continue com</span></div>
+
+            <!-- Botões secundários -->
+            <button id="btnCadastro" type="button" class="btn btn-outline-primary w-100 login-btn-outline"
+                data-bs-toggle="modal" data-bs-target="#registerModal">
+                <i class="fa fa-user-plus"></i>
+                Cadastre-se
             </button>
-        </form>
 
-        <div class="login-sep"><span>ou continue com</span></div>
-
-
-        <div class="btnCadastro">
-            <button id="btnCadastro" type="button" class="login-btn">
-                Cadastre-se 
+            <button id="loginGoogle" type="button" class="btn btn-light w-100 login-btn-google">
+                <i class="fab fa-google"></i>
+                Entrar com Google
             </button>
+
+            <div class="login-foot">
+                Problemas de acesso? <a href="#">Fale com o suporte</a>
+            </div>
+
         </div>
 
-        <button id="loginGoogle" type="button" class="login-btn-google">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Entrar com Google
-        </button>
+    </div><!-- /.login-wrapper -->
 
-        <div class="login-foot">
-            Problemas de acesso? <a href="#">Fale com o suporte</a>
-        </div>
-
-    </div>
-
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <!-- ══ MODAL DE CADASTRO ══════════════════════════════════════════ -->
+    <div class="modal fade" id="registerModal" tabindex="-1"
+        aria-labelledby="registerModalEl" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
+
                 <div class="modal-header">
-                    <h5 class="modal-title" id="registerModalLabel">Cadastrar novo usuário</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    <h5 class="modal-title" id="registerModalEl">
+                        <i class="fa fa-user-plus me-2"></i>
+                        Cadastrar novo usuário
+                    </h5>
+                    <button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
+
                 <div class="modal-body">
                     <form id="registerForm" class="row g-3">
                         <div class="col-md-6">
                             <label for="registerNome" class="form-label">Nome</label>
-                            <input type="text" class="form-control" id="registerNome" name="nome" placeholder="Digite seu nome" required>
+                            <input type="text" class="form-control" id="registerNome"
+                                name="nome" placeholder="Digite seu nome" required>
                         </div>
                         <div class="col-md-6">
                             <label for="registerSobrenome" class="form-label">Sobrenome</label>
-                            <input type="text" class="form-control" id="registerSobrenome" name="sobrenome" placeholder="Digite seu sobrenome" required>
+                            <input type="text" class="form-control" id="registerSobrenome"
+                                name="sobrenome" placeholder="Digite seu sobrenome" required>
                         </div>
                         <div class="col-md-6">
                             <label for="registerCpf" class="form-label">CPF</label>
-                            <input type="text" class="form-control" id="registerCpf" name="cpf" placeholder="000.000.000-00" required>
+                            <input type="text" class="form-control" id="registerCpf"
+                                name="cpf" placeholder="000.000.000-00" required>
                         </div>
                         <div class="col-md-6">
                             <label for="registerRg" class="form-label">RG</label>
-                            <input type="text" class="form-control" id="registerRg" name="rg" placeholder="Digite seu RG" required>
+                            <input type="text" class="form-control" id="registerRg"
+                                name="rg" placeholder="Digite seu RG" required>
                         </div>
                         <div class="col-md-6">
                             <label for="registerSenha" class="form-label">Senha</label>
-                            <input type="password" class="form-control" id="registerSenha" name="senha" placeholder="Digite uma senha" required>
+                            <input type="password" class="form-control" id="registerSenha"
+                                name="senha" placeholder="Digite uma senha" required>
                         </div>
                         <div class="col-md-6">
                             <label for="registerSenhaConfirm" class="form-label">Confirmar senha</label>
-                            <input type="password" class="form-control" id="registerSenhaConfirm" name="senhaConfirm" placeholder="Confirme a senha" required>
+                            <input type="password" class="form-control" id="registerSenhaConfirm"
+                                name="senhaConfirm" placeholder="Confirme a senha" required>
                         </div>
-                        <div class="col-12 form-check">
-                            <input class="form-check-input" type="checkbox" id="registerAtivo" name="ativo" value="true" checked>
-                            <label class="form-check-label" for="registerAtivo">Ativo</label>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                    id="registerAtivo" name="ativo" value="true" checked>
+                                <label class="form-check-label" for="registerAtivo">Ativo</label>
+                            </div>
                         </div>
                     </form>
                 </div>
+
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" id="saveRegister" class="btn btn-primary">Salvar</button>
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="saveRegister"
+                        class="btn btn-primary">Salvar</button>
                 </div>
+
             </div>
         </div>
     </div>
