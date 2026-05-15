@@ -41,11 +41,13 @@ final class Login extends Base
             # protegendo a aplicação contra SQL injection.
             $login = $qb->createNamedParameter($login);
 
-            # Monta a cláusula WHERE com três condições ligadas por OR:
-            # WHERE cpf = :login OR email = :login OR whatsapp = :login
-            $qb->where('cpf = ' . $login)
+            # Monta a cláusula WHERE com quatro condições ligadas por OR:
+            # WHERE cpf = :login OR email = :login OR celular = :login OR telefone = :login
+            # ATENÇÃO: a view vw_user tem as colunas "celular" e "telefone" (não "whatsapp")
+            $qb->where('cpf = '      . $login)
                 ->orWhere('email = '    . $login)
-                ->orWhere('whatsapp = ' . $login);
+                ->orWhere('celular = '  . $login)
+                ->orWhere('telefone = ' . $login);
 
             # Executa a query e busca um único registro (a primeira linha encontrada)
             $user = $qb->fetchAssociative();
@@ -57,6 +59,7 @@ final class Login extends Base
             $senhaValida = password_verify($senha, $user['senha'] ?? $dummyHash);
 
             # Falha de autenticação: mensagem genérica + contador de tentativas
+            # Também bloqueia usuários com ativo = false (aguardando aprovação)
             if (!$user || !$senhaValida) {
                 # Incrementa o contador de tentativas falhas da sessão atual
                 $_SESSION['login_attempts'] = ($_SESSION['login_attempts'] ?? 0) + 1;
@@ -66,6 +69,18 @@ final class Login extends Base
                     $_SESSION['login_attempts'] = 0;
                 }
                 return $this->json($response, ['status' => false, 'msg' => 'Verifique seu e-mail e senha e tente novamente!', 'id' => 0], 403);
+            }
+
+            # Usuário encontrado e senha correta — verifica se a conta está ativa
+            # Usuários cadastrados via pré-cadastro têm ativo = false até aprovação de um admin
+            # O PostgreSQL pode retornar o boolean como string 'f'/'t' ou como '0'/'1'
+            $ativo = $user['ativo'] ?? false;
+            if ($ativo === false || $ativo === 'f' || $ativo === '0' || $ativo === '') {
+                return $this->json($response, [
+                    'status' => false,
+                    'msg'    => 'Sua conta ainda não foi ativada. Aguarde a aprovação de um administrador.',
+                    'id'     => 0,
+                ], 403);
             }
 
             # Login válido: zera contadores de tentativa e lockout
@@ -165,11 +180,22 @@ final class Login extends Base
             'sobrenome' => $sobrenome,
             'cpf'       => $cpf,
             'rg'        => $rg,
-            'senha'     => password_hash($senha, PASSWORD_DEFAULT)
+            'senha'     => password_hash($senha, PASSWORD_DEFAULT),
+            'ativo'     => false, # Conta inativa até aprovação de um administrador
+        ];
+        # Mapeia os tipos explicitamente — o Doctrine DBAL com pdo_pgsql
+        # converte false PHP para string vazia se o tipo não for declarado
+        $DataUserTypes = [
+            'nome'      => \Doctrine\DBAL\Types\Types::STRING,
+            'sobrenome' => \Doctrine\DBAL\Types\Types::STRING,
+            'cpf'       => \Doctrine\DBAL\Types\Types::STRING,
+            'rg'        => \Doctrine\DBAL\Types\Types::STRING,
+            'senha'     => \Doctrine\DBAL\Types\Types::STRING,
+            'ativo'     => \Doctrine\DBAL\Types\Types::BOOLEAN,
         ];
         $id_usuario = 0;
         #Insere os dados no data base com o Docrine e recebe o ID do usuário criado.
-        $id_usuario = \app\database\DB::connection()->insert('users', $DataUser);
+        $id_usuario = \app\database\DB::connection()->insert('users', $DataUser, $DataUserTypes);
         #Insere os dados do email do usuário na base.
         $DataEmail = [
             'id_usuario' => $id_usuario,
@@ -192,7 +218,23 @@ final class Login extends Base
     }
     public function logout($request, $response)
     {
-        // 1. Destrói todos os dados da sessão atual
+        // 1. Desativa o usuário no banco antes de destruir a sessão
+        //    (pega o ID enquanto a sessão ainda existe)
+        $userId = $_SESSION['user']['id'] ?? null;
+        if ($userId) {
+            try {
+                \app\database\DB::connection()->update(
+                    'users',
+                    ['ativo' => false, 'atualizado_em' => date('Y-m-d H:i:s')],
+                    ['id'    => (int) $userId],
+                    ['ativo' => \Doctrine\DBAL\Types\Types::BOOLEAN]
+                );
+            } catch (\Throwable $e) {
+                error_log('[logout][DB] ' . $e->getMessage());
+            }
+        }
+
+        // 2. Destrói todos os dados da sessão atual
         $_SESSION = [];
 
         // 2. Remove o cookie de sessão do navegador (PHP_SESSION_COOKIE)

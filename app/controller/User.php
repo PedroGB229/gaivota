@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace app\controller;
 
+use Doctrine\DBAL\Types\Types;
+
 final class User extends Base
 {
     public function insert($request, $response)
@@ -16,16 +18,27 @@ final class User extends Base
         }
 
         $fields = [
-            'nome' => $form['nome'] ?? '',
+            'nome'      => $form['nome']      ?? '',
             'sobrenome' => $form['sobrenome'] ?? '',
-            'cpf' => $form['cpf'] ?? '',
-            'rg' => $form['rg'] ?? '',
-            'senha' => password_hash($senha, PASSWORD_DEFAULT),
-            'ativo' => ($form['ativo'] === 'true') ? true : false,
+            'cpf'       => $form['cpf']       ?? '',
+            'rg'        => $form['rg']        ?? '',
+            'senha'     => password_hash($senha, PASSWORD_DEFAULT),
+            'ativo'     => false, # Sempre false no cadastro — admin ativa depois
+        ];
+
+        # Mapeia explicitamente o tipo de cada coluna para o Doctrine DBAL
+        # sem isso o pdo_pgsql converte false PHP para string vazia e o Postgres rejeita
+        $types = [
+            'nome'      => Types::STRING,
+            'sobrenome' => Types::STRING,
+            'cpf'       => Types::STRING,
+            'rg'        => Types::STRING,
+            'senha'     => Types::STRING,
+            'ativo'     => Types::BOOLEAN,
         ];
 
         try {
-            $isInserted = \app\database\DB::connection()->insert('users', $fields);
+            $isInserted = \app\database\DB::connection()->insert('users', $fields, $types);
             if (!$isInserted) {
                 return $this->json($response, ['status' => false, 'msg' => 'Não foi possível cadastrar o usuário.', 'id' => 0], 500);
             }
