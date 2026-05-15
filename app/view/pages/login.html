@@ -43,28 +43,45 @@
 
             <div class="login-divider"></div>
 
+            <!-- Alerta de erro (oculto por padrão) -->
+            <div id="loginAlert" class="login-alert" style="display:none;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="loginAlertMsg"></span>
+            </div>
+
             <!-- Formulário de login -->
-            <form id="form">
+            <form id="form" novalidate>
                 <div class="login-field">
                     <label for="login">Usuário</label>
                     <div class="input-wrap">
                         <i class="fa fa-user"></i>
                         <input type="text" id="login" name="login"
-                            placeholder="CPF, telefone ou e-mail" autofocus>
+                            placeholder="CPF, telefone ou e-mail" autofocus autocomplete="username">
                     </div>
                 </div>
 
                 <div class="login-field">
                     <label for="senha">Senha</label>
-                    <div class="input-wrap">
+                    <div class="input-wrap input-wrap--password">
                         <i class="fa fa-lock"></i>
                         <input type="password" id="senha" name="senha"
-                            placeholder="••••••••">
+                            placeholder="••••••••" autocomplete="current-password">
+                        <button type="button" class="input-wrap__eye" id="toggleSenha" tabindex="-1"
+                            aria-label="Mostrar/ocultar senha">
+                            <i class="fa-regular fa-eye" id="eyeIcon"></i>
+                        </button>
                     </div>
                 </div>
 
                 <button id="btnLogin" type="button" class="btn btn-primary w-100 login-btn">
-                    Entrar no sistema
+                    <span id="btnLoginText">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>
+                        Entrar no sistema
+                    </span>
+                    <span id="btnLoginSpinner" style="display:none;">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Entrando…
+                    </span>
                 </button>
             </form>
 
@@ -106,7 +123,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <form id="registerForm" class="row g-3">
+                    <form id="registerForm" class="row g-3" novalidate>
                         <div class="col-md-6">
                             <label for="registerNome" class="form-label">Nome</label>
                             <input type="text" class="form-control" id="registerNome"
@@ -160,6 +177,101 @@
 
     {{ vite('resources/js/app.js') }}
     {{ vite('resources/js/pages/login.js') }}
+
+    <style>
+    /* ── Melhorias visuais do login ────────────────────────── */
+
+    /* Alerta de erro inline */
+    .login-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        color: #dc2626;
+        font-size: 0.875rem;
+        padding: 0.65rem 1rem;
+        margin-bottom: 1rem;
+        animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Botão de olho na senha */
+    .input-wrap--password {
+        position: relative;
+    }
+    .input-wrap__eye {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #94a3b8;
+        padding: 4px;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+    .input-wrap__eye:hover { color: #2563eb; }
+
+    /* Animação de shake no erro */
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20%,60%  { transform: translateX(-6px); }
+        40%,80%  { transform: translateX(6px); }
+    }
+    .login-shake { animation: shake 0.4s ease; }
+    </style>
+
+    <script>
+    // ── Toggle senha visível/oculta ──────────────────────────
+    (function () {
+        const toggle = document.getElementById('toggleSenha');
+        const senhaInput = document.getElementById('senha');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (!toggle || !senhaInput) return;
+        toggle.addEventListener('click', () => {
+            const visible = senhaInput.type === 'text';
+            senhaInput.type = visible ? 'password' : 'text';
+            eyeIcon.classList.toggle('fa-eye', visible);
+            eyeIcon.classList.toggle('fa-eye-slash', !visible);
+        });
+    })();
+
+    // ── Feedback de erro inline ──────────────────────────────
+    window.__showLoginError = function (msg) {
+        const alert = document.getElementById('loginAlert');
+        const alertMsg = document.getElementById('loginAlertMsg');
+        if (!alert || !alertMsg) return;
+        alertMsg.textContent = msg;
+        alert.style.display = 'flex';
+        // Shake no card
+        const card = document.querySelector('.login-card');
+        if (card) {
+            card.classList.remove('login-shake');
+            void card.offsetWidth; // reflow
+            card.classList.add('login-shake');
+        }
+    };
+
+    window.__hideLoginError = function () {
+        const alert = document.getElementById('loginAlert');
+        if (alert) alert.style.display = 'none';
+    };
+
+    // ── Estado do botão de login (spinner) ───────────────────
+    window.__setLoginLoading = function (loading) {
+        const btn = document.getElementById('btnLogin');
+        const text = document.getElementById('btnLoginText');
+        const spinner = document.getElementById('btnLoginSpinner');
+        if (!btn || !text || !spinner) return;
+        btn.disabled = loading;
+        text.style.display = loading ? 'none' : 'inline';
+        spinner.style.display = loading ? 'inline' : 'none';
+    };
+    </script>
 </body>
 
 </html>

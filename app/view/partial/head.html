@@ -1,6 +1,6 @@
 <nav class="navbar bg-primary navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">Senac</a>
+        <a class="navbar-brand" href="/">Gaivota Tech</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -29,6 +29,47 @@
                     </ul>
                 </li>
             </ul>
+
+            <!-- Botão de finalizar sessão -->
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <button type="button" id="btnLogout" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Finalizar sessão
+                    </button>
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
+
+<script>
+(function () {
+    const btn = document.getElementById('btnLogout');
+    if (!btn) return;
+
+    btn.addEventListener('click', async function () {
+        // Confirma antes de sair
+        const confirmado = window.Swal
+            ? await Swal.fire({
+                title: 'Finalizar sessão?',
+                text: 'Você será desconectado do sistema.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sim, sair',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#dc2626',
+            }).then(r => r.isConfirmed)
+            : confirm('Deseja finalizar a sessão?');
+
+        if (!confirmado) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saindo…';
+
+        // Redireciona para a rota de logout (GET /auth/logout)
+        // O servidor destrói a sessão, apaga o cookie e redireciona para /login
+        window.location.href = '/auth/logout';
+    });
+})();
+</script>

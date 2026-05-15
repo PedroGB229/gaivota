@@ -190,4 +190,47 @@ final class Login extends Base
             'msg' => 'Usuário cadastrado com sucesso!'
         ], 200);
     }
+    public function logout($request, $response)
+    {
+        // 1. Destrói todos os dados da sessão atual
+        $_SESSION = [];
+
+        // 2. Remove o cookie de sessão do navegador (PHP_SESSION_COOKIE)
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                [
+                    'expires'  => time() - 42000,
+                    'path'     => $params['path'],
+                    'domain'   => $params['domain'],
+                    'secure'   => $params['secure'],
+                    'httponly' => $params['httponly'],
+                    'samesite' => 'Lax',
+                ]
+            );
+        }
+
+        // 3. Finaliza a sessão no servidor
+        session_destroy();
+
+        // 4. Remove o cookie JWT auth_token do navegador
+        $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+                    || $_SERVER['SERVER_PORT'] == 443;
+
+        setcookie('auth_token', '', [
+            'expires'  => time() - 42000,   // Data no passado = apaga o cookie
+            'path'     => '/',
+            'domain'   => $_SERVER['HTTP_HOST'],
+            'secure'   => $isSecure,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
+
+        // 5. Redireciona para a tela de login
+        return $response
+            ->withHeader('Location', '/login')
+            ->withStatus(302);
+    }
 }

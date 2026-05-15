@@ -6,10 +6,19 @@ $app->get('/', app\controller\Home::class . ':home')->add(app\middleware\Middlew
 $app->get('/home', app\controller\Home::class . ':home')->add(app\middleware\Middleware::web());
 $app->get('/login', app\controller\Login::class . ':login')->add(app\middleware\Middleware::web());
 
+// ── Autenticação ─────────────────────────────────────────────
+// Rota POST para processar o formulário de login (gera sessão + cookie JWT)
+$app->post('/auth/login', app\controller\Login::class . ':authenticate');
+
+// Rota GET para finalizar a sessão e redirecionar para /login
+$app->get('/auth/logout', app\controller\Login::class . ':logout')->add(app\middleware\Middleware::web());
+
+// ── Usuários ─────────────────────────────────────────────────
 $app->group('/usuario', function (Slim\Routing\RouteCollectorProxy $group) {
     $group->post('/insert', app\controller\User::class . ':insert');
 });
 
+// ── Clientes ─────────────────────────────────────────────────
 $app->group('/cliente', function (Slim\Routing\RouteCollectorProxy $group) {
     $group->get('/lista', app\controller\Customer::class . ':list');
     $group->get('/detalhes/{id}', app\controller\Customer::class . ':details');
