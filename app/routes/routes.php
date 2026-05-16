@@ -7,11 +7,11 @@ $app->get('/home', app\controller\Home::class . ':home')->add(app\middleware\Mid
 $app->get('/login', app\controller\Login::class . ':login')->add(app\middleware\Middleware::web());
 
 // ── Autenticação ─────────────────────────────────────────────
-// Rota POST para processar o formulário de login (gera sessão + cookie JWT)
-$app->post('/auth/login', app\controller\Login::class . ':authenticate');
-
-// Rota GET para finalizar a sessão e redirecionar para /login
-$app->get('/auth/logout', app\controller\Login::class . ':logout')->add(app\middleware\Middleware::web());
+$app->post('/auth/login',       app\controller\Login::class . ':authenticate');
+$app->post('/auth/google',      app\controller\Login::class . ':google');
+$app->get('/auth/google/callback', app\controller\Login::class . ':googleCallback');
+$app->post('/auth/preregister', app\controller\Login::class . ':preRegister');
+$app->get('/auth/logout',       app\controller\Login::class . ':logout')->add(app\middleware\Middleware::web());
 
 // ── Usuários ─────────────────────────────────────────────────
 $app->group('/usuario', function (Slim\Routing\RouteCollectorProxy $group) {

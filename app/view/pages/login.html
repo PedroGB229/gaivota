@@ -7,6 +7,38 @@
     {{ vite('resources/css/app.css') }}
     {{ vite('resources/css/login.css') }}
     <title>Gaivota Tech — Login</title>
+
+    <!--
+        Google Identity Services — necessário para o One Tap.
+        Substitua YOUR_GOOGLE_CLIENT_ID pelo Client ID real do seu projeto
+        no Google Cloud Console (APIs & Services → Credentials).
+        O mesmo valor deve estar no .env como GOOGLE_CLIENT_ID=...
+    -->
+    <meta name="google-signin-client_id" content="{{ google_client_id ?? '' }}">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Inicialização do Google One Tap (antes do </head> para garantir que
+         window.handleGoogleCredential já esteja declarado pelo login.js) -->
+    <script>
+    window.addEventListener('load', function () {
+        const clientId = document.querySelector('meta[name="google-signin-client_id"]')?.content;
+        if (!clientId || !window.google?.accounts?.id) return;
+
+        google.accounts.id.initialize({
+            client_id:         clientId,
+            callback:          window.handleGoogleCredential,
+            auto_select:       false,
+            cancel_on_tap_outside: true,
+        });
+
+        // Renderiza o prompt One Tap (canto superior direito)
+        // O botão #loginGoogle aciona google.accounts.id.prompt() via login.js
+        google.accounts.id.renderButton(
+            document.getElementById('g-one-tap-render'),
+            { type: 'standard', shape: 'rectangular', theme: 'outline', size: 'large' }
+        );
+    });
+    </script>
 </head>
 
 <body class="login-page">
@@ -99,6 +131,9 @@
                 Entrar com Google
             </button>
 
+            <!-- Elemento âncora para o renderButton do Google (invisível) -->
+            <div id="g-one-tap-render" style="display:none;"></div>
+
             <div class="login-foot">
                 Problemas de acesso? <a href="#">Fale com o suporte</a>
             </div>
@@ -124,42 +159,71 @@
 
                 <div class="modal-body">
                     <form id="registerForm" class="row g-3" novalidate>
+
+                        <!-- Nome -->
                         <div class="col-md-6">
                             <label for="registerNome" class="form-label">Nome</label>
                             <input type="text" class="form-control" id="registerNome"
                                 name="nome" placeholder="Digite seu nome" required>
                         </div>
+
+                        <!-- Sobrenome -->
                         <div class="col-md-6">
                             <label for="registerSobrenome" class="form-label">Sobrenome</label>
                             <input type="text" class="form-control" id="registerSobrenome"
                                 name="sobrenome" placeholder="Digite seu sobrenome" required>
                         </div>
+
+                        <!-- CPF -->
                         <div class="col-md-6">
                             <label for="registerCpf" class="form-label">CPF</label>
                             <input type="text" class="form-control" id="registerCpf"
                                 name="cpf" placeholder="000.000.000-00" required>
                         </div>
+
+                        <!-- RG (com máscara 00.000.000-0) -->
                         <div class="col-md-6">
                             <label for="registerRg" class="form-label">RG</label>
                             <input type="text" class="form-control" id="registerRg"
-                                name="rg" placeholder="Digite seu RG" required>
+                                name="rg" placeholder="00.000.000-0">
                         </div>
+
+                        <!-- E-mail -->
+                        <div class="col-md-6">
+                            <label for="registerEmail" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="registerEmail"
+                                name="email" placeholder="seu@email.com" required>
+                        </div>
+
+                        <!-- Telefone (com máscara) -->
+                        <div class="col-md-6">
+                            <label for="registerTelefone" class="form-label">Telefone</label>
+                            <input type="text" class="form-control" id="registerTelefone"
+                                name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+
+                        <!-- Senha -->
                         <div class="col-md-6">
                             <label for="registerSenha" class="form-label">Senha</label>
                             <input type="password" class="form-control" id="registerSenha"
-                                name="senha" placeholder="Digite uma senha" required>
+                                name="senha" placeholder="Digite uma senha" required minlength="6">
                         </div>
+
+                        <!-- Confirmar senha -->
                         <div class="col-md-6">
                             <label for="registerSenhaConfirm" class="form-label">Confirmar senha</label>
                             <input type="password" class="form-control" id="registerSenhaConfirm"
                                 name="senhaConfirm" placeholder="Confirme a senha" required>
                         </div>
+
+                        <!-- Aviso de aprovação -->
                         <div class="col-12">
                             <div class="alert alert-warning d-flex align-items-center gap-2 py-2 mb-0" role="alert">
                                 <i class="fa-solid fa-clock"></i>
                                 <small>Sua conta ficará <strong>pendente de aprovação</strong> até que um administrador a ative.</small>
                             </div>
                         </div>
+
                     </form>
                 </div>
 

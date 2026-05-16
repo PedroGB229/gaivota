@@ -2,12 +2,11 @@ import Modal from 'bootstrap/js/dist/modal';
 import Swal from 'sweetalert2';
 
 // ── Botão de login ───────────────────────────────────────────────
-const btnLogin  = document.getElementById('btnLogin');
+const btnLogin   = document.getElementById('btnLogin');
 const loginInput = document.getElementById('login');
 const senhaInput = document.getElementById('senha');
 
 if (btnLogin) {
-    // Permite usar Enter nos campos para submeter
     [loginInput, senhaInput].forEach(input => {
         if (!input) return;
         input.addEventListener('keydown', e => {
@@ -19,7 +18,6 @@ if (btnLogin) {
         const login = loginInput?.value?.trim();
         const senha = senhaInput?.value;
 
-        // Limpa erro anterior
         window.__hideLoginError?.();
 
         if (!login || !senha) {
@@ -48,7 +46,6 @@ if (btnLogin) {
                 return;
             }
 
-            // Login bem-sucedido → redireciona
             await Swal.fire({
                 icon: 'success',
                 title: 'Bem-vindo!',
@@ -61,31 +58,65 @@ if (btnLogin) {
             window.location.href = '/home';
 
         } catch (err) {
-            window.__showLoginError?.('Não foi possível conectar ao servidor.');
+            let texto = err.message || 'Não foi possível conectar ao servidor.';
+            if (texto.includes('429'))      texto = 'Sua conta foi temporariamente bloqueada. Tente novamente em alguns minutos.';
+            else if (texto.includes('403')) texto = 'Usuário ou senha incorretos.';
+            else if (texto.includes('500')) texto = 'Ocorreu um problema interno. Tente novamente em instantes.';
+            window.__showLoginError?.(texto);
         } finally {
             window.__setLoginLoading?.(false);
         }
     });
 }
 
+// ── Botão Google — fluxo OAuth redirect (funciona em localhost e HTTP) ──
+// O Chrome bloqueia o One Tap em HTTP/localhost via FedCM.
+// Redireciona para o Google com response_type=code e volta em /auth/google/callback.
+const btnGoogle = document.getElementById('loginGoogle');
+if (btnGoogle) {
+    btnGoogle.addEventListener('click', () => {
+        const clientId = document.querySelector('meta[name="google-signin-client_id"]')?.content;
+        if (!clientId) {
+            window.__showLoginError?.('Google Client ID não configurado no servidor.');
+            return;
+        }
+        const redirectUri = encodeURIComponent(window.location.origin + '/auth/google/callback');
+        const scope       = encodeURIComponent('openid email profile');
+        const url = 'https://accounts.google.com/o/oauth2/v2/auth'
+                  + '?client_id='     + clientId
+                  + '&redirect_uri='  + redirectUri
+                  + '&response_type=code'
+                  + '&scope='         + scope
+                  + '&access_type=online'
+                  + '&prompt=select_account';
+        window.location.href = url;
+    });
+}
+
 // ── Modal de cadastro ────────────────────────────────────────────
-const registerButton  = document.getElementById('btnCadastro');
 const registerModalEl = document.getElementById('registerModal');
 const saveButton      = document.getElementById('saveRegister');
 const registerForm    = document.getElementById('registerForm');
 
 if (registerModalEl) {
     const registerModal = new Modal(registerModalEl);
+    const btnCadastro   = document.getElementById('btnCadastro');
+
     const cpfField      = document.getElementById('registerCpf');
+    const rgField       = document.getElementById('registerRg');
+    const telefoneField = document.getElementById('registerTelefone');
     const passwordField = document.getElementById('registerSenha');
     const confirmField  = document.getElementById('registerSenhaConfirm');
 
-    if (window.Inputmask && cpfField) {
-        window.Inputmask({ mask: ['999.999.999-99'], keepStatic: true }).mask(cpfField);
+    // Máscaras
+    if (window.Inputmask) {
+        if (cpfField)      window.Inputmask({ mask: '999.999.999-99' }).mask(cpfField);
+        if (rgField)       window.Inputmask({ mask: '99.999.999-9' }).mask(rgField);
+        if (telefoneField) window.Inputmask({ mask: ['(99) 9999-9999', '(99) 99999-9999'], keepStatic: true }).mask(telefoneField);
     }
 
-    if (registerButton) {
-        registerButton.addEventListener('click', () => registerModal.show());
+    if (btnCadastro) {
+        btnCadastro.addEventListener('click', () => registerModal.show());
     }
 
     if (saveButton && registerForm) {
@@ -110,25 +141,31 @@ if (registerModalEl) {
 
             try {
                 const formData = new FormData(registerForm);
-                const response = await fetch('/usuario/insert', {
+
+                if (cpfField)      formData.set('cpf',      cpfField.value.replace(/\D/g, ''));
+                if (rgField)       formData.set('rg',       rgField.value.replace(/\D/g, ''));
+                if (telefoneField) formData.set('telefone', telefoneField.value.replace(/\D/g, ''));
+
+                const res = await fetch('/auth/preregister', {
                     method: 'POST',
                     headers: { Accept: 'application/json' },
                     body: formData,
                     credentials: 'same-origin',
                 });
 
-                const result = await response.json();
+                const result = await res.json();
 
-                if (!response.ok || !result.status) {
-                    throw new Error(result.msg || response.statusText || 'Erro ao cadastrar o usuário');
+                if (!res.ok || !result.status) {
+                    throw new Error(result.msg || res.statusText || 'Erro ao cadastrar o usuário');
                 }
 
-                Swal.fire({
+                await Swal.fire({
                     icon: 'success',
-                    title: 'Sucesso',
-                    text: result.msg || 'Usuário cadastrado com sucesso!',
-                    timer: 2500,
+                    title: 'Cadastro realizado!',
+                    text: result.msg || 'Aguarde a aprovação de um administrador para acessar o sistema.',
+                    timer: 3000,
                     timerProgressBar: true,
+                    showConfirmButton: false,
                 });
 
                 registerModal.hide();
@@ -138,7 +175,7 @@ if (registerModalEl) {
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Erro',
+                    title: 'Erro no cadastro',
                     text: error.message || 'Não foi possível cadastrar o usuário.',
                 });
             } finally {
