@@ -289,19 +289,6 @@
     </style>
 
     <script>
-    // ── Toggle senha visível/oculta ──────────────────────────
-    (function () {
-        const toggle = document.getElementById('toggleSenha');
-        const senhaInput = document.getElementById('senha');
-        const eyeIcon = document.getElementById('eyeIcon');
-        if (!toggle || !senhaInput) return;
-        toggle.addEventListener('click', () => {
-            const visible = senhaInput.type === 'text';
-            senhaInput.type = visible ? 'password' : 'text';
-            eyeIcon.classList.toggle('fa-eye', visible);
-            eyeIcon.classList.toggle('fa-eye-slash', !visible);
-        });
-    })();
 
     // ── Feedback de erro inline ──────────────────────────────
     window.__showLoginError = function (msg) {

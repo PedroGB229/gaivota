@@ -44,9 +44,9 @@ final class Login extends Base
             $placeholder = $qb->createNamedParameter($login);
 
             $qb->where('cpf = '       . $placeholder)
-               ->orWhere('email = '   . $placeholder)
-               ->orWhere('celular = ' . $placeholder)
-               ->orWhere('telefone = '. $placeholder);
+                ->orWhere('email = '   . $placeholder)
+                ->orWhere('celular = ' . $placeholder)
+                ->orWhere('telefone = ' . $placeholder);
 
             $user = $qb->fetchAssociative();
 
@@ -84,7 +84,6 @@ final class Login extends Base
             unset($user['senha']);
 
             return $this->_criarSessaoERetornar($response, $user);
-
         } catch (\PDOException $e) {
             error_log('[auth][DB] ' . $e->getMessage());
             return $this->json($response, ['status' => false, 'msg' => 'Não foi possível concluir o login. Tente novamente.', 'id' => 0], 500);
@@ -136,7 +135,6 @@ final class Login extends Base
             }
 
             return $this->_autenticarPorEmail($response, $claims['email'] ?? null);
-
         } catch (\JsonException $e) {
             error_log('[google][JSON] ' . $e->getMessage());
             return $this->json($response, ['status' => false, 'msg' => 'Resposta inválida do Google. Tente novamente.', 'id' => 0], 502);
@@ -149,7 +147,8 @@ final class Login extends Base
     // -------------------------------------------------------------------------
     // Callback OAuth — Google redireciona aqui após o usuário escolher a conta
     // Fluxo: GET /auth/google/callback?code=xxx
-    // Troca o code por tokens e autentica o usuário pelo e-mail
+    // Se e-mail não existe → redireciona para /login?google_new=1&email=xxx
+    // Se existe e está ativo → cria sessão e redireciona para /home
     // -------------------------------------------------------------------------
     public function googleCallback($request, $response)
     {
@@ -160,7 +159,6 @@ final class Login extends Base
         $redirect_uri     = $_ENV['GOOGLE_REDIRECT_URI']   ?? null;
 
         if (!$code) {
-            # Usuário cancelou ou erro — volta para login
             return $response->withHeader('Location', '/login')->withStatus(302);
         }
 
@@ -171,22 +169,131 @@ final class Login extends Base
                 'redirectUri'  => $redirect_uri,
             ]);
 
-            # Troca o authorization code por access token + id token
-            $token = $provider->getAccessToken('authorization_code', ['code' => $code]);
-
-            # Busca as informações do usuário via Google
+            $token      = $provider->getAccessToken('authorization_code', ['code' => $code]);
             $googleUser = $provider->getResourceOwner($token);
             $userArray  = $googleUser->toArray();
             $email      = $userArray['email'] ?? null;
 
             return $this->_autenticarPorEmail($response, $email, true);
-
         } catch (\Throwable $e) {
             error_log('[googleCallback] ' . $e->getMessage());
-            # Redireciona para login com mensagem de erro na query string
             return $response
                 ->withHeader('Location', '/login?google_error=1')
                 ->withStatus(302);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Finaliza cadastro Google — recebe email + senha escolhida pelo usuário
+    // POST /auth/google/set-password
+    // Body: { email, senha, nome (opcional) }
+    // -------------------------------------------------------------------------
+    public function setGooglePassword($request, $response)
+    {
+        $form  = $request->getParsedBody();
+        $email = trim($form['email'] ?? '');
+        $senha = $form['senha'] ?? '';
+        $nome  = trim($form['nome'] ?? '');
+
+        if (!$email || !$senha) {
+            return $this->json($response, ['status' => false, 'msg' => 'E-mail e senha são obrigatórios.'], 400);
+        }
+
+        if (strlen($senha) < 6) {
+            return $this->json($response, ['status' => false, 'msg' => 'A senha deve ter pelo menos 6 caracteres.'], 400);
+        }
+
+        try {
+            // Garante que o e-mail ainda não está cadastrado (duplo clique, etc.)
+            $qb   = \app\database\DB::select('id_usuario')->from('contact');
+            $qb->where('contato = ' . $qb->createNamedParameter($email))
+               ->andWhere("tipo = 'EMAIL'");
+            $existing = $qb->fetchAssociative();
+
+            if ($existing) {
+                return $this->json($response, [
+                    'status' => false,
+                    'msg'    => 'Este e-mail já está cadastrado. Tente fazer login normalmente.',
+                ], 409);
+            }
+
+            // Cria o usuário com a senha definida pelo usuário
+            \app\database\DB::connection()->insert('users', [
+                'nome'      => $nome ?: explode('@', $email)[0],
+                'sobrenome' => '',
+                'cpf'       => '',
+                'rg'        => '',
+                'senha'     => password_hash($senha, PASSWORD_DEFAULT),
+                'ativo'     => false,
+            ], [
+                'nome'      => \Doctrine\DBAL\Types\Types::STRING,
+                'sobrenome' => \Doctrine\DBAL\Types\Types::STRING,
+                'cpf'       => \Doctrine\DBAL\Types\Types::STRING,
+                'rg'        => \Doctrine\DBAL\Types\Types::STRING,
+                'senha'     => \Doctrine\DBAL\Types\Types::STRING,
+                'ativo'     => \Doctrine\DBAL\Types\Types::BOOLEAN,
+            ]);
+
+            $id_usuario = \app\database\DB::connection()->lastInsertId();
+
+            \app\database\DB::connection()->insert('contact', [
+                'id_usuario' => $id_usuario,
+                'tipo'       => 'EMAIL',
+                'contato'    => $email,
+            ]);
+
+            return $this->json($response, [
+                'status' => true,
+                'msg'    => 'Conta criada com sucesso! Aguarde a aprovação de um administrador para acessar.',
+            ], 200);
+
+        } catch (\PDOException $e) {
+            error_log('[setGooglePassword][DB] ' . $e->getMessage());
+            return $this->json($response, ['status' => false, 'msg' => 'Não foi possível criar a conta. Tente novamente.'], 500);
+        } catch (\Throwable $e) {
+            error_log('[setGooglePassword][GERAL] ' . $e->getMessage());
+            return $this->json($response, ['status' => false, 'msg' => 'Erro inesperado. Tente novamente.'], 500);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Remove conta cadastrada via Google (deleta do banco pelo e-mail)
+    // POST /auth/google/delete-account
+    // Body: { email: "usuario@gmail.com" }
+    // -------------------------------------------------------------------------
+    public function deleteGoogleAccount($request, $response)
+    {
+        $form  = $request->getParsedBody();
+        $email = trim($form['email'] ?? '');
+
+        if (!$email) {
+            return $this->json($response, ['status' => false, 'msg' => 'E-mail não informado.'], 400);
+        }
+
+        try {
+            $qb = \app\database\DB::select('id_usuario')->from('contact');
+            $qb->where('contato = ' . $qb->createNamedParameter($email))
+               ->andWhere("tipo = 'EMAIL'");
+
+            $row = $qb->fetchAssociative();
+
+            if (!$row) {
+                return $this->json($response, ['status' => false, 'msg' => 'Nenhuma conta encontrada com este e-mail.'], 404);
+            }
+
+            $id_usuario = $row['id_usuario'];
+
+            \app\database\DB::connection()->delete('contact', ['id_usuario' => $id_usuario]);
+            \app\database\DB::connection()->delete('users', ['id' => $id_usuario]);
+
+            return $this->json($response, ['status' => true, 'msg' => 'Conta removida com sucesso.'], 200);
+
+        } catch (\PDOException $e) {
+            error_log('[deleteGoogleAccount][DB] ' . $e->getMessage());
+            return $this->json($response, ['status' => false, 'msg' => 'Não foi possível remover a conta. Tente novamente.'], 500);
+        } catch (\Throwable $e) {
+            error_log('[deleteGoogleAccount][GERAL] ' . $e->getMessage());
+            return $this->json($response, ['status' => false, 'msg' => 'Erro inesperado. Tente novamente.'], 500);
         }
     }
 
@@ -230,7 +337,8 @@ final class Login extends Base
         ];
 
         try {
-            $id_usuario = \app\database\DB::connection()->insert('users', $DataUser, $DataUserTypes);
+            \app\database\DB::connection()->insert('users', $DataUser, $DataUserTypes);
+            $id_usuario = \app\database\DB::connection()->lastInsertId();
 
             if ($email) {
                 \app\database\DB::connection()->insert('contact', [
@@ -249,7 +357,6 @@ final class Login extends Base
             }
 
             return $this->json($response, ['status' => true, 'msg' => 'Usuário cadastrado com sucesso!'], 200);
-
         } catch (\PDOException $e) {
             error_log('[preRegister][DB] ' . $e->getMessage());
             return $this->json($response, ['status' => false, 'msg' => 'Não foi possível realizar o cadastro. Tente novamente.'], 500);
@@ -312,12 +419,15 @@ final class Login extends Base
     // HELPERS PRIVADOS
     // =========================================================================
 
-    /**
-     * Busca o usuário pelo e-mail e inicia sessão.
-     * Usado por google() (One Tap) e googleCallback() (OAuth redirect).
-     *
-     * @param  bool $redirect  true = redireciona (GET callback), false = JSON (AJAX)
-     */
+    // -------------------------------------------------------------------------
+    // Busca usuário pelo e-mail e autentica, ou redireciona para definir senha
+    // se for um cadastro novo via Google.
+    //
+    // MUDANÇA: quando o e-mail não existe no banco, em vez de criar a conta
+    // com senha vazia, redireciona para /login?google_new=1&email=xxx
+    // (fluxo redirect) ou retorna JSON com google_new=true (One Tap),
+    // para que o frontend abra o Swal pedindo a senha antes de cadastrar.
+    // -------------------------------------------------------------------------
     private function _autenticarPorEmail($response, ?string $email, bool $redirect = false)
     {
         if (!$email) {
@@ -329,30 +439,43 @@ final class Login extends Base
         $qb->where('email = ' . $qb->createNamedParameter($email));
         $user = $qb->fetchAssociative();
 
+        // ── Usuário não existe: pede senha antes de criar a conta ─────────────
         if (!$user) {
-            if ($redirect) return $response->withHeader('Location', '/login?google_error=sem_conta')->withStatus(302);
-            return $this->json($response, ['status' => false, 'msg' => 'Nenhuma conta vinculada a este e-mail. Por favor, cadastre-se.', 'id' => 0], 404);
+            if ($redirect) {
+                // Callback OAuth: redireciona para a tela de login com parâmetros
+                // O frontend detecta google_new=1 e abre o Swal de senha
+                return $response
+                    ->withHeader('Location', '/login?google_new=1&email=' . urlencode($email))
+                    ->withStatus(302);
+            }
+
+            // One Tap: retorna JSON para o JS abrir o modal de senha
+            return $this->json($response, [
+                'status'     => false,
+                'google_new' => true,
+                'email'      => $email,
+                'msg'        => 'Primeiro acesso! Defina uma senha para concluir o cadastro.',
+            ], 200);
         }
 
+        // ── Usuário existe mas está inativo ───────────────────────────────────
         $ativo = $user['ativo'] ?? false;
         if ($ativo === false || $ativo === 'f' || $ativo === '0' || $ativo === '') {
             if ($redirect) return $response->withHeader('Location', '/login?google_error=inativo')->withStatus(302);
             return $this->json($response, ['status' => false, 'msg' => 'Sua conta ainda não foi ativada. Aguarde a aprovação de um administrador.', 'id' => 0], 403);
         }
 
+        // ── Usuário existe e está ativo: autentica normalmente ────────────────
         unset($user['senha']);
 
         if ($redirect) {
-            $this->_criarSessaoERetornar($response, $user);
+            $response = $this->_criarSessaoERetornar($response, $user);
             return $response->withHeader('Location', '/home')->withStatus(302);
         }
 
         return $this->_criarSessaoERetornar($response, $user);
     }
 
-    /**
-     * Cria sessão + JWT + cookie e retorna JSON de sucesso.
-     */
     private function _criarSessaoERetornar($response, array $user)
     {
         session_regenerate_id(true);
