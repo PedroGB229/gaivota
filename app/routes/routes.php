@@ -4,43 +4,44 @@ declare(strict_types=1);
 
 use app\middleware\Middleware;
 
+$app->get('/', app\controller\Home::class . ':home')->add(Middleware::web());
+$app->get('/home', app\controller\Home::class . ':home')->add(Middleware::web());
 $app->get('/login', app\controller\Login::class . ':login')->add(Middleware::web());
-$app->post('/login', app\controller\Login::class . ':authenticate')->add(Middleware::web());
-$app->get('/logout', app\controller\Login::class . ':logout')->add(Middleware::web());
 
-$app->post('/cadastro', app\controller\Login::class . ':preRegister');
+// ── Autenticação ─────────────────────────────────────────────
+$app->post('/auth/login',              app\controller\Login::class . ':authenticate');
+$app->post('/auth/google',             app\controller\Login::class . ':google');
+$app->get('/auth/google/callback',     app\controller\Login::class . ':googleCallback');
+$app->post('/auth/google/set-password', app\controller\Login::class . ':setGooglePassword'); // << NOVO
+$app->post('/auth/preregister',        app\controller\Login::class . ':preRegister');
+$app->get('/auth/logout',              app\controller\Login::class . ':logout')->add(Middleware::web());
 
-$app->group('/authentication', function (\Slim\Routing\RouteCollectorProxy $group) {
-    $group->post('/google',      app\controller\Login::class . ':google');
-    $group->post('/auth',        app\controller\Login::class . ':authenticate');
-    $group->post('/preregister', app\controller\Login::class . ':preRegister');
+// ── Usuários ─────────────────────────────────────────────────
+$app->group('/usuario', function (Slim\Routing\RouteCollectorProxy $group) {
+    $group->post('/insert', app\controller\User::class . ':insert');
 });
 
-$app->get('/',     app\controller\Home::class . ':home')->add(Middleware::web());
-$app->get('/home', app\controller\Home::class . ':home')->add(Middleware::web());
-
-$app->group('/cliente', function (\Slim\Routing\RouteCollectorProxy $group) {
-    # Páginas HTML protegidas
-    $group->get('/lista',         app\controller\Customer::class . ':list')->add(Middleware::web());
-    $group->get('/detalhes/{id}', app\controller\Customer::class . ':details')->add(Middleware::web());
-    $group->get('/detalhes',      app\controller\Customer::class . ':details')->add(Middleware::web());
-    # Endpoints JSON protegidos
-    $group->post('/insert',      app\controller\Customer::class . ':insert')->add(Middleware::api());
-    $group->post('/update',      app\controller\Customer::class . ':update')->add(Middleware::api());
-    $group->post('/delete',      app\controller\Customer::class . ':delete')->add(Middleware::api());
-    $group->post('/listingdata', app\controller\Customer::class . ':listingdata')->add(Middleware::api());
+// ── Clientes ─────────────────────────────────────────────────
+$app->group('/cliente', function (Slim\Routing\RouteCollectorProxy $group) {
+    $group->get('/lista', app\controller\Customer::class . ':list')->add(Middleware::web());;
+    $group->get('/detalhes/{id}', app\controller\Customer::class . ':details')->add(Middleware::web());;
+    $group->get('/detalhes', app\controller\Customer::class . ':details')->add(Middleware::web());
+    $group->post('/insert', app\controller\Customer::class . ':insert')->add(Middleware::web());;
+    $group->post('/update', app\controller\Customer::class . ':update')->add(Middleware::web());
+    $group->post('/delete', app\controller\Customer::class . ':delete')->add(Middleware::web());
+    $group->post('/listingdata', app\controller\Customer::class . ':listingdata')->add(Middleware::web());
 });
 
 $app->group('/users', function (\Slim\Routing\RouteCollectorProxy $group) {
     # Páginas HTML protegidas
-    $group->get('/lista',         app\controller\Users::class . ':list')->add(Middleware::web());
-    $group->get('/detalhes/{id}', app\controller\Users::class . ':details')->add(Middleware::web());
-    $group->get('/detalhes',      app\controller\Users::class . ':details')->add(Middleware::web());
+    $group->get('/lista',         app\controller\User::class . ':list')->add(Middleware::web());
+    $group->get('/detalhes/{id}', app\controller\User::class . ':details')->add(Middleware::web());
+    $group->get('/detalhes',      app\controller\User::class . ':details')->add(Middleware::web());
     # Endpoints JSON protegidos
-    $group->post('/insert',      app\controller\Users::class . ':insert')->add(Middleware::api());
-    $group->post('/update',      app\controller\Users::class . ':update')->add(Middleware::api());
-    $group->post('/delete',      app\controller\Users::class . ':delete')->add(Middleware::api());
-    $group->post('/listingdata', app\controller\Users::class . ':listingdata')->add(Middleware::api());
+    $group->post('/insert',      app\controller\User::class . ':insert')->add(Middleware::api());
+    $group->post('/update',      app\controller\User::class . ':update')->add(Middleware::api());
+    $group->post('/delete',      app\controller\User::class . ':delete')->add(Middleware::api());
+    $group->post('/listingdata', app\controller\User::class . ':listingdata')->add(Middleware::api());
 });
 
 $app->group('/supplier', function (\Slim\Routing\RouteCollectorProxy $group) {
