@@ -6,7 +6,7 @@ namespace app\controller;
 
 use Doctrine\DBAL\Types\Types;
 
-final class User extends Base
+final class Users extends Base
 {
     public function insert($request, $response)
     {

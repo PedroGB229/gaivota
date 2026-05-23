@@ -7,7 +7,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "tests\\": "tests/"
+             "app\\": "app/",
+             "App\\": "app/"
         }
     },
     "require": {

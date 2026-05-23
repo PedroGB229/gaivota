@@ -12,15 +12,14 @@ test('product insert com dados válidos retorna 201 com status true', function (
         ->createRequest('POST', '/product')
         ->withHeader('Content-Type', 'application/x-www-form-urlencoded')
         ->withParsedBody([
-            'descricao'   => 'Caneta Azul BIC',
-            'codigoBarras' => '7891234560001',
-            'sku'          => 'CANETA-AZUL-001',
+            'descricao'    => 'Caneta Azul BIC',
+            'codigoBarras' => '7891234560099',
+            'sku'          => 'CANETA-AZUL-002',
             'valorCusto'   => '1,50',
             'valorVenda'   => '3,00',
             'estoque'      => '100',
             'ativo'        => 'true',
         ]);
-
     $response = (new ResponseFactory())->createResponse();
 
     $result = (new app\controller\Product())->insert($request, $response);

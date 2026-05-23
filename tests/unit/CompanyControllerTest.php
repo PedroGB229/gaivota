@@ -14,7 +14,7 @@ test('company insert com dados válidos retorna 201 com status true', function (
         ->withParsedBody([
             'nomeExibicao'      => 'Empresa Teste ',
             'nomeLegal'         => 'Empresa Teste  ',
-            'cnpj'              => '12.345.678/0001-99',
+            'cnpj'              => '98.765.432/0001-11',
             'inscricaoEstadual' => '123456789',
             'telefone'          => '(68) 3212-0000',
             'email'             => 'contato@empresateste.com',

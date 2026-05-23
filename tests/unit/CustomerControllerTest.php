@@ -14,7 +14,7 @@ test('customer insert com dados válidos retorna 201 com status true', function 
         ->withParsedBody([
             'nomeExibicao'       => 'Felipe',
             'nomeLegal'          => 'Jesus',
-            'numeroDocumento'    => '999.999.999-99',
+            'numeroDocumento'    => '888.777.666-55',
             'registroSecundario' => '98765',
             'dataRegistro'       => '01/01/1990',
             'ativo'              => 'true',

@@ -14,7 +14,7 @@ test('supplier insert com dados válidos retorna 201 com status true', function 
         ->withParsedBody([
             'nomeExibicao'       => 'Fornecedor Havan ',
             'nomeLegal'          => 'Fornecedor Havan Ro',
-            'numeroDocumento'    => '12.345.678/0001-99',
+            'numeroDocumento'    => '98.765.432/0001-11',
             'registroSecundario' => '987654321',
             'telefone'           => '(68) 6545-7777',
             'email'              => 'contato@fornecedorabc.com',
