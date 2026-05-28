@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\database\migration;
+namespace App\Database\Migration;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
@@ -38,3 +38,5 @@ final class Version20260506210938 extends AbstractMigration
         $schema->dropTable('users');
     }
 }
+
+

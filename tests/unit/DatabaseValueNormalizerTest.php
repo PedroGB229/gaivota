@@ -5,7 +5,7 @@ declare(strict_types=1);
 # Classe concreta auxiliar para testar a trait isoladamente
 class NormalizerStub
 {
-    use App\Trait\DatabaseValueNormalizer;
+    use App\Traits\DatabaseValueNormalizer;
 }
 
 # Instancia o stub antes de cada teste
@@ -46,3 +46,5 @@ test('conversão de datas ida e volta preserva o valor original', function () {
         $this->normalizer->convertBrDateToDatabaseFormat($dataBr)
     ))->toBe($dataBr);
 });
+
+

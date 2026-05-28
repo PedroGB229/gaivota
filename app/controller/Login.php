@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-namespace app\controller;
+namespace App\Controller;
 
 final class Login extends Base
 {
@@ -40,7 +41,7 @@ final class Login extends Base
         }
 
         try {
-            $qb          = \app\database\DB::select('*')->from('vw_user');
+            $qb          = \App\Database\DB::select('*')->from('vw_user');
             $placeholder = $qb->createNamedParameter($login);
 
             $qb->where('cpf = '       . $placeholder)
@@ -74,7 +75,7 @@ final class Login extends Base
             unset($_SESSION['login_attempts'], $_SESSION['login_locked_until']);
 
             if (password_needs_rehash($user['senha'], PASSWORD_DEFAULT)) {
-                \app\database\DB::connection()->update(
+                \App\Database\DB::connection()->update(
                     'users',
                     ['senha' => password_hash($senha, PASSWORD_DEFAULT), 'atualizado_em' => date('Y-m-d H:i:s')],
                     ['id' => $user['id']],
@@ -205,7 +206,7 @@ final class Login extends Base
 
         try {
             // Garante que o e-mail ainda não está cadastrado (duplo clique, etc.)
-            $qb   = \app\database\DB::select('id_usuario')->from('contact');
+            $qb   = \App\Database\DB::select('id_usuario')->from('contact');
             $qb->where('contato = ' . $qb->createNamedParameter($email))
                ->andWhere("tipo = 'EMAIL'");
             $existing = $qb->fetchAssociative();
@@ -218,7 +219,7 @@ final class Login extends Base
             }
 
             // Cria o usuário com a senha definida pelo usuário
-            \app\database\DB::connection()->insert('users', [
+            \App\Database\DB::connection()->insert('users', [
                 'nome'      => $nome ?: explode('@', $email)[0],
                 'sobrenome' => '',
                 'cpf'       => '',
@@ -234,9 +235,9 @@ final class Login extends Base
                 'ativo'     => \Doctrine\DBAL\Types\Types::BOOLEAN,
             ]);
 
-            $id_usuario = \app\database\DB::connection()->lastInsertId();
+            $id_usuario = \App\Database\DB::connection()->lastInsertId();
 
-            \app\database\DB::connection()->insert('contact', [
+            \App\Database\DB::connection()->insert('contact', [
                 'id_usuario' => $id_usuario,
                 'tipo'       => 'EMAIL',
                 'contato'    => $email,
@@ -271,7 +272,7 @@ final class Login extends Base
         }
 
         try {
-            $qb = \app\database\DB::select('id_usuario')->from('contact');
+            $qb = \App\Database\DB::select('id_usuario')->from('contact');
             $qb->where('contato = ' . $qb->createNamedParameter($email))
                ->andWhere("tipo = 'EMAIL'");
 
@@ -283,8 +284,8 @@ final class Login extends Base
 
             $id_usuario = $row['id_usuario'];
 
-            \app\database\DB::connection()->delete('contact', ['id_usuario' => $id_usuario]);
-            \app\database\DB::connection()->delete('users', ['id' => $id_usuario]);
+            \App\Database\DB::connection()->delete('contact', ['id_usuario' => $id_usuario]);
+            \App\Database\DB::connection()->delete('users', ['id' => $id_usuario]);
 
             return $this->json($response, ['status' => true, 'msg' => 'Conta removida com sucesso.'], 200);
 
@@ -337,11 +338,11 @@ final class Login extends Base
         ];
 
         try {
-            \app\database\DB::connection()->insert('users', $DataUser, $DataUserTypes);
-            $id_usuario = \app\database\DB::connection()->lastInsertId();
+            \App\Database\DB::connection()->insert('users', $DataUser, $DataUserTypes);
+            $id_usuario = \App\Database\DB::connection()->lastInsertId();
 
             if ($email) {
-                \app\database\DB::connection()->insert('contact', [
+                \App\Database\DB::connection()->insert('contact', [
                     'id_usuario' => $id_usuario,
                     'tipo'       => 'EMAIL',
                     'contato'    => $email,
@@ -349,7 +350,7 @@ final class Login extends Base
             }
 
             if ($telefone) {
-                \app\database\DB::connection()->insert('contact', [
+                \App\Database\DB::connection()->insert('contact', [
                     'id_usuario' => $id_usuario,
                     'tipo'       => 'TELEFONE',
                     'contato'    => preg_replace('/\D/', '', $telefone),
@@ -374,7 +375,7 @@ final class Login extends Base
         $userId = $_SESSION['user']['id'] ?? null;
         if ($userId) {
             try {
-                \app\database\DB::connection()->update(
+                \App\Database\DB::connection()->update(
                     'users',
                     ['ativo' => false, 'atualizado_em' => date('Y-m-d H:i:s')],
                     ['id'    => (int) $userId],
@@ -435,7 +436,7 @@ final class Login extends Base
             return $this->json($response, ['status' => false, 'msg' => 'E-mail não encontrado no token Google.', 'id' => 0], 400);
         }
 
-        $qb = \app\database\DB::select('*')->from('vw_user');
+        $qb = \App\Database\DB::select('*')->from('vw_user');
         $qb->where('email = ' . $qb->createNamedParameter($email));
         $user = $qb->fetchAssociative();
 
@@ -521,3 +522,6 @@ final class Login extends Base
         ], 200);
     }
 }
+
+
+

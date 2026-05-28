@@ -29,7 +29,7 @@ test('company insert com dados válidos retorna 201 com status true', function (
 
     $response = (new ResponseFactory())->createResponse();
 
-    $result = (new app\controller\Company())->insert($request, $response);
+    $result = (new App\Controller\Company())->insert($request, $response);
 
     $result->getBody()->rewind();
 
@@ -41,3 +41,5 @@ test('company insert com dados válidos retorna 201 com status true', function (
 
     expect($json['msg'])->toContain('Salvo com sucesso');
 });
+
+

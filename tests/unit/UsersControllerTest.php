@@ -6,7 +6,7 @@ use Slim\Psr7\Factory\RequestFactory;
 use Slim\Psr7\Factory\ResponseFactory;
 
 afterEach(function () {
-    \app\database\DB::connection()->executeStatement(
+    \App\Database\DB::connection()->executeStatement(
         "DELETE FROM users WHERE cpf = '444.555.666-77'"
     );
 });
@@ -27,7 +27,7 @@ test('users insert com dados válidos retorna 201 com status true', function () 
 
     $response = (new ResponseFactory())->createResponse();
 
-    $result = (new app\controller\Users())->insert($request, $response);
+    $result = (new App\Controller\Users())->insert($request, $response);
 
     $result->getBody()->rewind();
 
@@ -37,3 +37,6 @@ test('users insert com dados válidos retorna 201 com status true', function () 
 
     expect($json['status'])->toBeTrue();
 });
+
+
+

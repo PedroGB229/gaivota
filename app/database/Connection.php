@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\database;
+namespace App\Database;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\DriverManager;
@@ -31,3 +31,5 @@ final class Connection
     # Previne instanciação direta — uso exclusivo via Connection::get()
     private function __construct() {}
 }
+
+

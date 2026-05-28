@@ -50,3 +50,5 @@ test('insert select e delete funcionam no PostgreSQL', function () {
 
     expect($deletado)->toBeTrue();
 });
+
+

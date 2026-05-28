@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\controller;
+namespace App\Controller;
 
 
 final class Home extends Base
@@ -18,7 +18,9 @@ final class Home extends Base
                 ->withHeader('Content-Type', 'text/html')
                 ->withStatus(200);
         } catch (\Exception $e) {
-            var_dump($e->getMessage());
+            error_log('[Home] ' . $e->getMessage());
+            return $response->withStatus(500);
         }
     }
 }
+

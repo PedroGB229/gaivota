@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Trait;
+namespace App\Traits;
 
 use Slim\Views\Twig;
 use Twig\TwigFunction;
-use app\helpers\Vite;
+use App\Helpers\Vite;
 
 trait Template
 { 
@@ -48,3 +48,5 @@ trait Template
         return 'pages/' . $name . EXT_VIEWS;
     }
 }
+
+

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\database\migration;
+namespace App\Database\Migration;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
@@ -55,3 +55,5 @@ final class Version20260507171344 extends AbstractMigration
         // escreva aqui o rollback do up()
     }
 }
+
+

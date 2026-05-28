@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Trait;
+namespace App\Traits;
 
 trait Response
 {
@@ -20,3 +20,5 @@ trait Response
             ->withHeader('Content-Type', 'application/json');
     }
 }
+
+

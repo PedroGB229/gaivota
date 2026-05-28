@@ -20,3 +20,5 @@ test('insere customer com dados da factory', function () {
 
     expect($inserido)->toBeTrue();
 });
+
+

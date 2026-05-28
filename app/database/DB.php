@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\database;
+namespace App\Database;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 
@@ -27,3 +27,5 @@ final class DB
     # Previne instanciação — uso exclusivo via métodos estáticos
     private function __construct() {}
 }
+
+

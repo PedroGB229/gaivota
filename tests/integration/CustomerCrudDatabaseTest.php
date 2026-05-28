@@ -59,3 +59,7 @@ test('ciclo CRUD completo no banco PostgreSQL', function () {
 
     expect($customerRemovido)->toBeEmpty();
 });
+
+
+
+

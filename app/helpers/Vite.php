@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\helpers;
+namespace App\Helpers;
 
 final class Vite
 {
@@ -86,3 +86,5 @@ final class Vite
         }
     }
 }
+
+

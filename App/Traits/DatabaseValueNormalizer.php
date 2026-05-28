@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Trait;
+namespace App\Traits;
 
 trait DatabaseValueNormalizer
 {
@@ -141,3 +141,5 @@ trait DatabaseValueNormalizer
         return $value === '' ? null : $value;
     }
 }
+
+

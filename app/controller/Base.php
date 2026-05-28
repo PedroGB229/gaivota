@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace app\controller;
+namespace App\Controller;
 
-use app\trait\DatabaseValueNormalizer;
-use app\trait\Response;
-use app\trait\Template;
+use App\Traits\DatabaseValueNormalizer;
+use App\Traits\Response;
+use App\Traits\Template;
 
 abstract class Base
 {
     use Template, Response, DatabaseValueNormalizer;
 }
+
+

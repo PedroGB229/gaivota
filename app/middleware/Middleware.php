@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace app\middleware;
+namespace App\Middleware;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Slim\Psr7\Response;
 
-class Middleware 
+final class Middleware 
 {
     #Metodo de autenticação via token de rota POST.
     public static function api()
@@ -65,3 +65,4 @@ class Middleware
         return $middleware;
     }
 }
+

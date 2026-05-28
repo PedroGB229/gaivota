@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\controller;
+namespace App\Controller;
 
 use Doctrine\DBAL\Types\Types;
 
@@ -38,12 +38,12 @@ final class Users extends Base
         ];
 
         try {
-            $isInserted = \app\database\DB::connection()->insert('users', $fields, $types);
+            $isInserted = \App\Database\DB::connection()->insert('users', $fields, $types);
             if (!$isInserted) {
                 return $this->json($response, ['status' => false, 'msg' => 'Não foi possível cadastrar o usuário.', 'id' => 0], 500);
             }
 
-            $id = (int) \app\database\DB::connection()->fetchOne(
+            $id = (int) \App\Database\DB::connection()->fetchOne(
                 'SELECT id FROM users WHERE cpf = ? ORDER BY id DESC LIMIT 1',
                 [$fields['cpf']]
             );
@@ -54,3 +54,7 @@ final class Users extends Base
         }
     }
 }
+
+
+
+

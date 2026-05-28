@@ -23,7 +23,7 @@ test('supplier insert com dados válidos retorna 201 com status true', function 
 
     $response = (new ResponseFactory())->createResponse();
 
-    $result = (new app\controller\Supplier())->insert($request, $response);
+    $result = (new App\Controller\Supplier())->insert($request, $response);
 
     $result->getBody()->rewind();
 
@@ -35,3 +35,5 @@ test('supplier insert com dados válidos retorna 201 com status true', function 
 
     expect($json['msg'])->toContain('Salvo com sucesso');
 });
+
+

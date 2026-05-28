@@ -9,7 +9,7 @@ use Slim\Psr7\Factory\StreamFactory;
 
 # Instancia o controller antes de cada teste
 beforeEach(function () {
-    $this->controller = new app\controller\Customer();
+    $this->controller = new App\Controller\Customer();
     $this->responseFactory = new ResponseFactory();
 });
 
@@ -71,3 +71,5 @@ test('delete sem ID retorna 403 com mensagem de erro', function () {
     # Mensagem deve pedir o código do cliente
     expect($json['msg'])->toContain('cliente');
 });
+
+
