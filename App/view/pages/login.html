@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{ vite('resources/css/app.css') }}
+    {{ vite('resources/css/login.css') }}
+    <title>Gaivota Tech — Login</title>
+
+    <!--
+        Google Identity Services — necessário para o One Tap.
+        Substitua YOUR_GOOGLE_CLIENT_ID pelo Client ID real do seu projeto
+        no Google Cloud Console (APIs & Services → Credentials).
+        O mesmo valor deve estar no .env como GOOGLE_CLIENT_ID=...
+    -->
+    <meta name="google-signin-client_id" content="{{ google_client_id ?? '' }}">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Inicialização do Google One Tap (antes do </head> para garantir que
+         window.handleGoogleCredential já esteja declarado pelo login.js) -->
+    <script>
+    window.addEventListener('load', function () {
+        const clientId = document.querySelector('meta[name="google-signin-client_id"]')?.content;
+        if (!clientId || !window.google?.accounts?.id) return;
+
+        google.accounts.id.initialize({
+            client_id:         clientId,
+            callback:          window.handleGoogleCredential,
+            auto_select:       false,
+            cancel_on_tap_outside: true,
+        });
+
+        // Renderiza o prompt One Tap (canto superior direito)
+        // O botão #loginGoogle aciona google.accounts.id.prompt() via login.js
+        google.accounts.id.renderButton(
+            document.getElementById('g-one-tap-render'),
+            { type: 'standard', shape: 'rectangular', theme: 'outline', size: 'large' }
+        );
+    });
+    </script>
+</head>
+
+<body class="login-page">
+
+    <div class="login-wrapper">
+
+        <!-- ══ FOTO ══════════════════════════════════════════════════════ -->
+        <div class="login-photo">
+            <img src="/img/gaivota.jpg" alt="Gaivota">
+            <div class="login-photo__overlay"></div>
+        </div>
+
+        <!-- ══ CARD ══════════════════════════════════════════════════════ -->
+        <div class="login-card">
+
+            <!-- Logo -->
+            <div class="login-logo">
+                <div class="login-logo__icon">
+                    <img src="/img/SimboloGaivota.avif" alt="Logo Gaivota Tech">
+                </div>
+                <div>
+                    <div class="login-logo__name">gaivota<span>_tech</span></div>
+                    <div class="login-logo__sub">Sistema de gestão empresarial</div>
+                </div>
+            </div>
+
+            <!-- Badge -->
+            <div class="text-center">
+                <div class="login-badge">
+                    <span class="login-badge__dot"></span>
+                    Sistema operacional
+                </div>
+            </div>
+
+            <div class="login-divider"></div>
+
+            <!-- Alerta de erro (oculto por padrão) -->
+            <div id="loginAlert" class="login-alert" style="display:none;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span id="loginAlertMsg"></span>
+            </div>
+
+            <!-- Formulário de login -->
+            <form id="form" novalidate>
+                <div class="login-field">
+                    <label for="login">Usuário</label>
+                    <div class="input-wrap">
+                        <i class="fa fa-user"></i>
+                        <input type="text" id="login" name="login"
+                            placeholder="CPF, telefone ou e-mail" autofocus autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="login-field">
+                    <label for="senha">Senha</label>
+                    <div class="input-wrap input-wrap--password">
+                        <i class="fa fa-lock"></i>
+                        <input type="password" id="senha" name="senha"
+                            placeholder="••••••••" autocomplete="current-password">
+                        <button type="button" class="input-wrap__eye" id="toggleSenha" tabindex="-1"
+                            aria-label="Mostrar/ocultar senha">
+                            <i class="fa-regular fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="btnLogin" type="button" class="btn btn-primary w-100 login-btn">
+                    <span id="btnLoginText">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i>
+                        Entrar no sistema
+                    </span>
+                    <span id="btnLoginSpinner" style="display:none;">
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        Entrando…
+                    </span>
+                </button>
+            </form>
+
+            <div class="login-sep"><span>ou continue com</span></div>
+
+            <!-- Botões secundários -->
+            <button id="btnCadastro" type="button" class="btn btn-outline-primary w-100 login-btn-outline"
+                data-bs-toggle="modal" data-bs-target="#registerModal">
+                <i class="fa fa-user-plus"></i>
+                Cadastre-se
+            </button>
+
+            <button id="loginGoogle" type="button" class="btn btn-light w-100 login-btn-google">
+                <i class="fab fa-google"></i>
+                Entrar com Google
+            </button>
+
+            <!-- Elemento âncora para o renderButton do Google (invisível) -->
+            <div id="g-one-tap-render" style="display:none;"></div>
+
+            <div class="login-foot">
+                Problemas de acesso? <a href="#">Fale com o suporte</a>
+            </div>
+
+        </div>
+
+    </div><!-- /.login-wrapper -->
+
+    <!-- ══ MODAL DE CADASTRO ══════════════════════════════════════════ -->
+    <div class="modal fade" id="registerModal" tabindex="-1"
+        aria-labelledby="registerModalEl" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalEl">
+                        <i class="fa fa-user-plus me-2"></i>
+                        Cadastrar novo usuário
+                    </h5>
+                    <button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="registerForm" class="row g-3" novalidate>
+
+                        <!-- Nome -->
+                        <div class="col-md-6">
+                            <label for="registerNome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="registerNome"
+                                name="nome" placeholder="Digite seu nome" required>
+                        </div>
+
+                        <!-- Sobrenome -->
+                        <div class="col-md-6">
+                            <label for="registerSobrenome" class="form-label">Sobrenome</label>
+                            <input type="text" class="form-control" id="registerSobrenome"
+                                name="sobrenome" placeholder="Digite seu sobrenome" required>
+                        </div>
+
+                        <!-- CPF -->
+                        <div class="col-md-6">
+                            <label for="registerCpf" class="form-label">CPF</label>
+                            <input type="text" class="form-control" id="registerCpf"
+                                name="cpf" placeholder="000.000.000-00" required>
+                        </div>
+
+                        <!-- RG (com máscara 00.000.000-0) -->
+                        <div class="col-md-6">
+                            <label for="registerRg" class="form-label">RG</label>
+                            <input type="text" class="form-control" id="registerRg"
+                                name="rg" placeholder="00.000.000-0">
+                        </div>
+
+                        <!-- E-mail -->
+                        <div class="col-md-6">
+                            <label for="registerEmail" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="registerEmail"
+                                name="email" placeholder="seu@email.com" required>
+                        </div>
+
+                        <!-- Telefone (com máscara) -->
+                        <div class="col-md-6">
+                            <label for="registerTelefone" class="form-label">Telefone</label>
+                            <input type="text" class="form-control" id="registerTelefone"
+                                name="telefone" placeholder="(00) 00000-0000">
+                        </div>
+
+                        <!-- Senha -->
+                        <div class="col-md-6">
+                            <label for="registerSenha" class="form-label">Senha</label>
+                            <input type="password" class="form-control" id="registerSenha"
+                                name="senha" placeholder="Digite uma senha" required minlength="6">
+                        </div>
+
+                        <!-- Confirmar senha -->
+                        <div class="col-md-6">
+                            <label for="registerSenhaConfirm" class="form-label">Confirmar senha</label>
+                            <input type="password" class="form-control" id="registerSenhaConfirm"
+                                name="senhaConfirm" placeholder="Confirme a senha" required>
+                        </div>
+
+                        <!-- Aviso de aprovação -->
+                        <div class="col-12">
+                            <div class="alert alert-warning d-flex align-items-center gap-2 py-2 mb-0" role="alert">
+                                <i class="fa-solid fa-clock"></i>
+                                <small>Sua conta ficará <strong>pendente de aprovação</strong> até que um administrador a ative.</small>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="saveRegister"
+                        class="btn btn-primary">Salvar</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    {{ vite('resources/js/app.js') }}
+    {{ vite('resources/js/pages/login.js') }}
+
+    <style>
+    /* ── Melhorias visuais do login ────────────────────────── */
+
+    /* Alerta de erro inline */
+    .login-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        color: #dc2626;
+        font-size: 0.875rem;
+        padding: 0.65rem 1rem;
+        margin-bottom: 1rem;
+        animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Botão de olho na senha */
+    .input-wrap--password {
+        position: relative;
+    }
+    .input-wrap__eye {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #94a3b8;
+        padding: 4px;
+        line-height: 1;
+        transition: color 0.2s;
+    }
+    .input-wrap__eye:hover { color: #2563eb; }
+
+    /* Animação de shake no erro */
+    @keyframes shake {
+        0%,100% { transform: translateX(0); }
+        20%,60%  { transform: translateX(-6px); }
+        40%,80%  { transform: translateX(6px); }
+    }
+    .login-shake { animation: shake 0.4s ease; }
+    </style>
+
+    <script>
+
+    // ── Feedback de erro inline ──────────────────────────────
+    window.__showLoginError = function (msg) {
+        const alert = document.getElementById('loginAlert');
+        const alertMsg = document.getElementById('loginAlertMsg');
+        if (!alert || !alertMsg) return;
+        alertMsg.textContent = msg;
+        alert.style.display = 'flex';
+        // Shake no card
+        const card = document.querySelector('.login-card');
+        if (card) {
+            card.classList.remove('login-shake');
+            void card.offsetWidth; // reflow
+            card.classList.add('login-shake');
+        }
+    };
+
+    window.__hideLoginError = function () {
+        const alert = document.getElementById('loginAlert');
+        if (alert) alert.style.display = 'none';
+    };
+
+    // ── Estado do botão de login (spinner) ───────────────────
+    window.__setLoginLoading = function (loading) {
+        const btn = document.getElementById('btnLogin');
+        const text = document.getElementById('btnLoginText');
+        const spinner = document.getElementById('btnLoginSpinner');
+        if (!btn || !text || !spinner) return;
+        btn.disabled = loading;
+        text.style.display = loading ? 'none' : 'inline';
+        spinner.style.display = loading ? 'inline' : 'none';
+    };
+    </script>
+</body>
+
+</html>
