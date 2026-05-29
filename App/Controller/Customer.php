@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use PDO;
+
 final class Customer extends Base
 {
     public function list($request, $response)
@@ -42,6 +44,7 @@ final class Customer extends Base
     public function insert($request, $response)
     {
         $form = $request->getParsedBody();
+       
         $FieldsAndValues = [
             'nome_fantasia' => $form['nomeExibicao'],
             'sobrenome_razao' => $form['nomeLegal'] ?? '',

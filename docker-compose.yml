@@ -209,7 +209,7 @@ services:
       # Falhas consecutivas para marcar como unhealthy
       retries: 3
       # Período de carência estendido para o composer install inicial
-      start_period: 90s
+      start_period: 120s
     # Garante que o PostgreSQL esteja saudável antes do PHP-FPM iniciar
     depends_on:
       postgres:
@@ -333,15 +333,15 @@ services:
     # Healthcheck usando o utilitário nativo do PostgreSQL
     healthcheck:
       # Confirma que o banco aceita conexões
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1" ]
       # Intervalo entre verificações
-      interval: 30s
+      interval: 10s
       # Tempo máximo aguardando resposta
       timeout: 5s
       # Falhas consecutivas para marcar como unhealthy
-      retries: 3
-      # Período de carência após subir
-      start_period: 30s
+      retries: 10
+      # Período de carência após subir (maior para primeira inicialização)
+      start_period: 60s
     # Expõe a porta do banco para ferramentas cliente no host
     ports:
       - "${DB_PORT}:${DB_PORT}"
