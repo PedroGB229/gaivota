@@ -6,6 +6,21 @@ import fs from 'node:fs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const HOT_FILE = resolve(__dirname, 'public/hot');
 
+function buildPageEntries() {
+    const pagesDir = resolve(__dirname, 'resources/js/pages')
+
+    return Object.fromEntries(
+        fs.readdirSync(pagesDir, { recursive: true })
+            .filter(file => String(file).endsWith('.js'))
+            .map(file => {
+                const normalized = String(file).replace(/\\/g, '/') // Windows path fix
+                return [
+                    `pages/${normalized.replace(/\.js$/, '')}`,
+                    resolve(pagesDir, normalized)
+                ]
+            })
+    )
+}
 function writeHotFilePlugin() {
     return {
         name: 'jaiminho-write-hot-file',
@@ -46,12 +61,11 @@ export default defineConfig(({ command }) => ({
             input: {
                 // CSS como entry INDEPENDENTE — não acoplado ao JS
                 style: resolve(__dirname, 'resources/css/app.css'),
+                login: resolve(__dirname, 'resources/css/login.css'),
                 // JS principal — sem nenhum import de CSS dentro dele
                 app: resolve(__dirname, 'resources/js/app.js'),
-                // Entries por página
-                'pages/customer': resolve(__dirname, 'resources/js/pages/customer.js'),
-                'pages/list-customer': resolve(__dirname, 'resources/js/pages/list-customer.js'),
-                'pages/login': resolve(__dirname, 'resources/js/pages/login.js')
+                // Entries de página
+                ...buildPageEntries()  // Descobre e injeta todas as páginas automaticamente
             },
             output: {
                 entryFileNames: '[name]-[hash].js',

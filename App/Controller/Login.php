@@ -20,6 +20,8 @@ final class Login extends Base
                 ->withStatus(200);
         } catch (\Exception $e) {
             error_log('[login][view] ' . $e->getMessage());
+            $response->getBody()->write('<pre>Erro ao carregar página de login: ' . htmlspecialchars($e->getMessage()) . '</pre>');
+            return $response->withStatus(500);
         }
     }
 

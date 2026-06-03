@@ -12,7 +12,7 @@ $app->get('/login', App\Controller\Login::class . ':login')->add(Middleware::web
 $app->post('/auth/login',              App\Controller\Login::class . ':authenticate');
 $app->post('/auth/google',             App\Controller\Login::class . ':google');
 $app->get('/auth/google/callback',     App\Controller\Login::class . ':googleCallback');
-$app->post('/auth/google/set-password', App\Controller\Login::class . ':setGooglePassword'); // << NOVO
+$app->post('/auth/google/set-password', App\Controller\Login::class . ':setGooglePassword'); 
 $app->post('/auth/preregister',        App\Controller\Login::class . ':preRegister');
 $app->get('/auth/logout',              App\Controller\Login::class . ':logout')->add(Middleware::web());
 

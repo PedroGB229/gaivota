@@ -35,6 +35,8 @@ final class Version20260507163138 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
+        // Drop the view first, then drop the table
+        $this->addSql('DROP VIEW IF EXISTS public.vw_user CASCADE');
         $schema->dropTable('contact');
     }
 }

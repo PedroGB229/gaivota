@@ -52,7 +52,7 @@ final class Version20260507171344 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        // escreva aqui o rollback do up()
+        $this->addSql('DROP VIEW IF EXISTS public.vw_user CASCADE');
     }
 }
 
