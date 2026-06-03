@@ -69,3 +69,4 @@ ChartSale.setOption(dataChartSale);
 ChartMarketing.setOption(dataChatMarketing);
 
 Chart.setId('sale-charts').getData('/sala/resultado-vendas').BAR().render();
+Chart.setId('marketing-charts').getData('/sala/resultado-marketing').PIE().render();
