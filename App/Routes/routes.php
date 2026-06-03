@@ -79,6 +79,9 @@ $app->group('/product', function (\Slim\Routing\RouteCollectorProxy $group) {
     $group->post('/delete',      App\Controller\Product::class . ':delete')->add(Middleware::api());
     $group->post('/listingdata', App\Controller\Product::class . ':listingdata')->add(Middleware::api());
 });
+// ── Home charts ──────────────────────────────────────────────
+$app->get('/home/resultado-vendas',    App\Controller\Home::class . ':resultadoVendas')->add(Middleware::api());
+$app->get('/home/resultado-marketing', App\Controller\Home::class . ':resultadoMarketing')->add(Middleware::api());
 
 
 
